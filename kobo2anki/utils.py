@@ -4,6 +4,10 @@ import traceback
 from anki.notes import Note
 from aqt import mw
 from aqt.qt import QDialog, QVBoxLayout, QLabel, QPushButton
+import os
+import xml.etree.ElementTree as ET
+from datetime import datetime
+
 
 def extract_words_from_kobo():
     conn = sqlite3.connect('E:\.kobo\KoboReader.sqlite')
@@ -14,23 +18,40 @@ def extract_words_from_kobo():
     conn.close()
     return words
 
-def get_annotations():
-    # Implement the logic to read annotations
-    # This could involve reading from a different file or database
-    # For now, let's return a simple dictionary for illustration
-    all_annotations = {
-        'timestamp1': {'text': 'Longtemps, Flora Fontanges a été une voleuse d’âme, ', 'timestamp': '2024-01-01T21:40:25Z'},
-        'timestamp2': {'text': 'Annotation 2', 'timestamp': '3:10 PM'},
-        'timestamp3': {'text': 'Annotation 3', 'timestamp': '3:15 PM'}
-    }
-    return all_annotations
+def get_annotations(folder_path):
+    annotations = {}
+
+    # Define namespaces
+    namespaces = {'ns': 'http://ns.adobe.com/digitaleditions/annotations', 'dc': 'http://purl.org/dc/elements/1.1/'}
+
+    for filename in os.listdir(folder_path):
+        if filename.endswith(".annot"):
+            file_path = os.path.join(folder_path, filename)
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+
+            # Iterate over annotations
+            for annotation_elem in root.findall(".//ns:annotation", namespaces):
+                identifier = annotation_elem.find(".//dc:identifier", namespaces).text
+                date_str = annotation_elem.find(".//dc:date", namespaces).text
+                date = parse_date(date_str)
+                print(dir(annotation_elem.find(".//ns:target/", namespaces)))
+                # Find the text element under fragment
+                text_elem = annotation_elem.find(".//ns:target/ns:fragment/ns:text", namespaces)
+                text = text_elem.text if text_elem is not None else None                
+                print(text)
+                # Add to annotations dictionary
+                annotations[identifier] = {'text': text, 'timestamp': date}
+
+    return annotations
 
 def match_annotations_and_words(words, annotations):
     pairs = []
     for word, DateCreated in words:
         matching_annotation = ""
+        date = parse_date(DateCreated)
         for annotation in annotations.values():
-            if annotation['timestamp'] > DateCreated:
+            if annotation['timestamp'] > date:
                 if word in annotation['text']:
                     matching_annotation = annotation['text']
                 break  # Stop searching after finding the first matching annotation
@@ -61,8 +82,11 @@ def create_anki_cards(pairs):
     mw.reset()
 
 
+def parse_date(date_str):
 
-
+    date_str_no_z = date_str[:-1]
+    date = datetime.fromisoformat(date_str_no_z)
+    return date
 
 
 
@@ -89,7 +113,7 @@ def show_confirmation_dialog(words):
 
     # Add Confirm and Cancel buttons
     confirm_button = QPushButton("Confirm")
-    confirm_button.clicked.connect(lambda: create_anki_cards(match_annotations_and_words(words, get_annotations())))
+    confirm_button.clicked.connect(lambda: create_anki_cards(match_annotations_and_words(words, get_annotations("E:/Digital Editions/Annotations/Digital Editions"))))
 
     layout.addWidget(confirm_button)
 
