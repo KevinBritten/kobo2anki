@@ -7,10 +7,12 @@ from aqt.qt import QDialog, QVBoxLayout, QLabel, QPushButton
 import os
 import xml.etree.ElementTree as ET
 from datetime import datetime
+# from openai import OpenAI
+
 
 
 def extract_words_from_kobo():
-    conn = sqlite3.connect('E:\.kobo\KoboReader.sqlite')
+    conn = sqlite3.connect('F:\.kobo\KoboReader.sqlite')
     cursor = conn.cursor()
     query = "SELECT Text, DateCreated FROM WordList"
     cursor.execute(query)
@@ -20,7 +22,6 @@ def extract_words_from_kobo():
 
 def get_annotations(folder_path):
     annotations = {}
-
     # Define namespaces
     namespaces = {'ns': 'http://ns.adobe.com/digitaleditions/annotations', 'dc': 'http://purl.org/dc/elements/1.1/'}
 
@@ -104,6 +105,9 @@ def show_confirmation_dialog(words):
     label = QLabel("Do you want to create Anki cards for the following words?")
     layout.addWidget(label)
 
+    # print(dir(OpenAI))
+
+
     # Add the list of words
     for word_tuple in words:
         word = word_tuple[0]  # Assuming the word is in the first position of the tuple
@@ -113,7 +117,7 @@ def show_confirmation_dialog(words):
 
     # Add Confirm and Cancel buttons
     confirm_button = QPushButton("Confirm")
-    confirm_button.clicked.connect(lambda: create_anki_cards(match_annotations_and_words(words, get_annotations("E:/Digital Editions/Annotations/Digital Editions"))))
+    confirm_button.clicked.connect(lambda: create_anki_cards(match_annotations_and_words(words, get_annotations("F:/Digital Editions/Annotations/Digital Editions"))))
 
     layout.addWidget(confirm_button)
 

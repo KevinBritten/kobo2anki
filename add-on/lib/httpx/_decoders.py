@@ -212,7 +212,7 @@ class TextChunker:
 
     def decode(self, content: str) -> typing.List[str]:
         if self._chunk_size is None:
-            return [content] if content else []
+            return [content]
 
         self._buffer.write(content)
         if self._buffer.tell() >= self._chunk_size:
@@ -245,7 +245,7 @@ class TextDecoder:
     Handles incrementally decoding bytes into text
     """
 
-    def __init__(self, encoding: str = "utf-8") -> None:
+    def __init__(self, encoding: str = "utf-8"):
         self.decoder = codecs.getincrementaldecoder(encoding)(errors="replace")
 
     def decode(self, data: bytes) -> str:
@@ -259,8 +259,7 @@ class LineDecoder:
     """
     Handles incrementally reading lines from text.
 
-    Has the same behaviour as the stdllib splitlines,
-    but handling the input iteratively.
+    Has the same behaviour as the stdllib splitlines, but handling the input iteratively.
     """
 
     def __init__(self) -> None:
@@ -280,9 +279,7 @@ class LineDecoder:
             text = text[:-1]
 
         if not text:
-            # NOTE: the edge case input of empty text doesn't occur in practice,
-            # because other httpx internals filter out this value
-            return []  # pragma: no cover
+            return []
 
         trailing_newline = text[-1] in NEWLINE_CHARS
         lines = text.splitlines()

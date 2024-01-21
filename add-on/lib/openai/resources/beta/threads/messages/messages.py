@@ -7,20 +7,12 @@ from typing_extensions import Literal
 
 import httpx
 
-from ..... import _legacy_response
-from .files import (
-    Files,
-    AsyncFiles,
-    FilesWithRawResponse,
-    AsyncFilesWithRawResponse,
-    FilesWithStreamingResponse,
-    AsyncFilesWithStreamingResponse,
-)
+from .files import Files, AsyncFiles, FilesWithRawResponse, AsyncFilesWithRawResponse
 from ....._types import NOT_GIVEN, Body, Query, Headers, NotGiven
 from ....._utils import maybe_transform
 from ....._compat import cached_property
 from ....._resource import SyncAPIResource, AsyncAPIResource
-from ....._response import to_streamed_response_wrapper, async_to_streamed_response_wrapper
+from ....._response import to_raw_response_wrapper, async_to_raw_response_wrapper
 from .....pagination import SyncCursorPage, AsyncCursorPage
 from ....._base_client import (
     AsyncPaginator,
@@ -39,10 +31,6 @@ class Messages(SyncAPIResource):
     @cached_property
     def with_raw_response(self) -> MessagesWithRawResponse:
         return MessagesWithRawResponse(self)
-
-    @cached_property
-    def with_streaming_response(self) -> MessagesWithStreamingResponse:
-        return MessagesWithStreamingResponse(self)
 
     def create(
         self,
@@ -86,8 +74,6 @@ class Messages(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return self._post(
             f"/threads/{thread_id}/messages",
@@ -130,10 +116,6 @@ class Messages(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
-        if not message_id:
-            raise ValueError(f"Expected a non-empty value for `message_id` but received {message_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return self._get(
             f"/threads/{thread_id}/messages/{message_id}",
@@ -173,10 +155,6 @@ class Messages(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
-        if not message_id:
-            raise ValueError(f"Expected a non-empty value for `message_id` but received {message_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return self._post(
             f"/threads/{thread_id}/messages/{message_id}",
@@ -230,8 +208,6 @@ class Messages(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return self._get_api_list(
             f"/threads/{thread_id}/messages",
@@ -263,10 +239,6 @@ class AsyncMessages(AsyncAPIResource):
     @cached_property
     def with_raw_response(self) -> AsyncMessagesWithRawResponse:
         return AsyncMessagesWithRawResponse(self)
-
-    @cached_property
-    def with_streaming_response(self) -> AsyncMessagesWithStreamingResponse:
-        return AsyncMessagesWithStreamingResponse(self)
 
     async def create(
         self,
@@ -310,8 +282,6 @@ class AsyncMessages(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return await self._post(
             f"/threads/{thread_id}/messages",
@@ -354,10 +324,6 @@ class AsyncMessages(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
-        if not message_id:
-            raise ValueError(f"Expected a non-empty value for `message_id` but received {message_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return await self._get(
             f"/threads/{thread_id}/messages/{message_id}",
@@ -397,10 +363,6 @@ class AsyncMessages(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
-        if not message_id:
-            raise ValueError(f"Expected a non-empty value for `message_id` but received {message_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return await self._post(
             f"/threads/{thread_id}/messages/{message_id}",
@@ -454,8 +416,6 @@ class AsyncMessages(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return self._get_api_list(
             f"/threads/{thread_id}/messages",
@@ -483,16 +443,16 @@ class MessagesWithRawResponse:
     def __init__(self, messages: Messages) -> None:
         self.files = FilesWithRawResponse(messages.files)
 
-        self.create = _legacy_response.to_raw_response_wrapper(
+        self.create = to_raw_response_wrapper(
             messages.create,
         )
-        self.retrieve = _legacy_response.to_raw_response_wrapper(
+        self.retrieve = to_raw_response_wrapper(
             messages.retrieve,
         )
-        self.update = _legacy_response.to_raw_response_wrapper(
+        self.update = to_raw_response_wrapper(
             messages.update,
         )
-        self.list = _legacy_response.to_raw_response_wrapper(
+        self.list = to_raw_response_wrapper(
             messages.list,
         )
 
@@ -501,51 +461,15 @@ class AsyncMessagesWithRawResponse:
     def __init__(self, messages: AsyncMessages) -> None:
         self.files = AsyncFilesWithRawResponse(messages.files)
 
-        self.create = _legacy_response.async_to_raw_response_wrapper(
+        self.create = async_to_raw_response_wrapper(
             messages.create,
         )
-        self.retrieve = _legacy_response.async_to_raw_response_wrapper(
+        self.retrieve = async_to_raw_response_wrapper(
             messages.retrieve,
         )
-        self.update = _legacy_response.async_to_raw_response_wrapper(
+        self.update = async_to_raw_response_wrapper(
             messages.update,
         )
-        self.list = _legacy_response.async_to_raw_response_wrapper(
-            messages.list,
-        )
-
-
-class MessagesWithStreamingResponse:
-    def __init__(self, messages: Messages) -> None:
-        self.files = FilesWithStreamingResponse(messages.files)
-
-        self.create = to_streamed_response_wrapper(
-            messages.create,
-        )
-        self.retrieve = to_streamed_response_wrapper(
-            messages.retrieve,
-        )
-        self.update = to_streamed_response_wrapper(
-            messages.update,
-        )
-        self.list = to_streamed_response_wrapper(
-            messages.list,
-        )
-
-
-class AsyncMessagesWithStreamingResponse:
-    def __init__(self, messages: AsyncMessages) -> None:
-        self.files = AsyncFilesWithStreamingResponse(messages.files)
-
-        self.create = async_to_streamed_response_wrapper(
-            messages.create,
-        )
-        self.retrieve = async_to_streamed_response_wrapper(
-            messages.retrieve,
-        )
-        self.update = async_to_streamed_response_wrapper(
-            messages.update,
-        )
-        self.list = async_to_streamed_response_wrapper(
+        self.list = async_to_raw_response_wrapper(
             messages.list,
         )

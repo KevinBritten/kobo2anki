@@ -9,23 +9,16 @@ from typing_extensions import Literal
 
 import httpx
 
-from .. import _legacy_response
 from ..types import FileObject, FileDeleted, file_list_params, file_create_params
 from .._types import NOT_GIVEN, Body, Query, Headers, NotGiven, FileTypes
 from .._utils import extract_files, maybe_transform, deepcopy_minimal
 from .._compat import cached_property
 from .._resource import SyncAPIResource, AsyncAPIResource
-from .._response import (
-    StreamedBinaryAPIResponse,
-    AsyncStreamedBinaryAPIResponse,
-    to_streamed_response_wrapper,
-    async_to_streamed_response_wrapper,
-    to_custom_streamed_response_wrapper,
-    async_to_custom_streamed_response_wrapper,
-)
+from .._response import to_raw_response_wrapper, async_to_raw_response_wrapper
 from ..pagination import SyncPage, AsyncPage
 from .._base_client import (
     AsyncPaginator,
+    HttpxBinaryResponseContent,
     make_request_options,
 )
 
@@ -36,10 +29,6 @@ class Files(SyncAPIResource):
     @cached_property
     def with_raw_response(self) -> FilesWithRawResponse:
         return FilesWithRawResponse(self)
-
-    @cached_property
-    def with_streaming_response(self) -> FilesWithStreamingResponse:
-        return FilesWithStreamingResponse(self)
 
     def create(
         self,
@@ -99,6 +88,7 @@ class Files(SyncAPIResource):
             # sent to the server will contain a `boundary` parameter, e.g.
             # multipart/form-data; boundary=---abc--
             extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
+
         return self._post(
             "/files",
             body=maybe_transform(body, file_create_params.FileCreateParams),
@@ -132,8 +122,6 @@ class Files(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not file_id:
-            raise ValueError(f"Expected a non-empty value for `file_id` but received {file_id!r}")
         return self._get(
             f"/files/{file_id}",
             options=make_request_options(
@@ -203,8 +191,6 @@ class Files(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not file_id:
-            raise ValueError(f"Expected a non-empty value for `file_id` but received {file_id!r}")
         return self._delete(
             f"/files/{file_id}",
             options=make_request_options(
@@ -223,7 +209,7 @@ class Files(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> _legacy_response.HttpxBinaryResponseContent:
+    ) -> HttpxBinaryResponseContent:
         """
         Returns the contents of the specified file.
 
@@ -236,14 +222,12 @@ class Files(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not file_id:
-            raise ValueError(f"Expected a non-empty value for `file_id` but received {file_id!r}")
         return self._get(
             f"/files/{file_id}/content",
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=_legacy_response.HttpxBinaryResponseContent,
+            cast_to=HttpxBinaryResponseContent,
         )
 
     @typing_extensions.deprecated("The `.content()` method should be used instead")
@@ -270,8 +254,6 @@ class Files(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not file_id:
-            raise ValueError(f"Expected a non-empty value for `file_id` but received {file_id!r}")
         extra_headers = {"Accept": "application/json", **(extra_headers or {})}
         return self._get(
             f"/files/{file_id}/content",
@@ -309,10 +291,6 @@ class AsyncFiles(AsyncAPIResource):
     @cached_property
     def with_raw_response(self) -> AsyncFilesWithRawResponse:
         return AsyncFilesWithRawResponse(self)
-
-    @cached_property
-    def with_streaming_response(self) -> AsyncFilesWithStreamingResponse:
-        return AsyncFilesWithStreamingResponse(self)
 
     async def create(
         self,
@@ -372,6 +350,7 @@ class AsyncFiles(AsyncAPIResource):
             # sent to the server will contain a `boundary` parameter, e.g.
             # multipart/form-data; boundary=---abc--
             extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
+
         return await self._post(
             "/files",
             body=maybe_transform(body, file_create_params.FileCreateParams),
@@ -405,8 +384,6 @@ class AsyncFiles(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not file_id:
-            raise ValueError(f"Expected a non-empty value for `file_id` but received {file_id!r}")
         return await self._get(
             f"/files/{file_id}",
             options=make_request_options(
@@ -476,8 +453,6 @@ class AsyncFiles(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not file_id:
-            raise ValueError(f"Expected a non-empty value for `file_id` but received {file_id!r}")
         return await self._delete(
             f"/files/{file_id}",
             options=make_request_options(
@@ -496,7 +471,7 @@ class AsyncFiles(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> _legacy_response.HttpxBinaryResponseContent:
+    ) -> HttpxBinaryResponseContent:
         """
         Returns the contents of the specified file.
 
@@ -509,14 +484,12 @@ class AsyncFiles(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not file_id:
-            raise ValueError(f"Expected a non-empty value for `file_id` but received {file_id!r}")
         return await self._get(
             f"/files/{file_id}/content",
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=_legacy_response.HttpxBinaryResponseContent,
+            cast_to=HttpxBinaryResponseContent,
         )
 
     @typing_extensions.deprecated("The `.content()` method should be used instead")
@@ -543,8 +516,6 @@ class AsyncFiles(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not file_id:
-            raise ValueError(f"Expected a non-empty value for `file_id` but received {file_id!r}")
         extra_headers = {"Accept": "application/json", **(extra_headers or {})}
         return await self._get(
             f"/files/{file_id}/content",
@@ -580,97 +551,43 @@ class AsyncFiles(AsyncAPIResource):
 
 class FilesWithRawResponse:
     def __init__(self, files: Files) -> None:
-        self.create = _legacy_response.to_raw_response_wrapper(
+        self.create = to_raw_response_wrapper(
             files.create,
         )
-        self.retrieve = _legacy_response.to_raw_response_wrapper(
+        self.retrieve = to_raw_response_wrapper(
             files.retrieve,
         )
-        self.list = _legacy_response.to_raw_response_wrapper(
+        self.list = to_raw_response_wrapper(
             files.list,
         )
-        self.delete = _legacy_response.to_raw_response_wrapper(
+        self.delete = to_raw_response_wrapper(
             files.delete,
         )
-        self.content = _legacy_response.to_raw_response_wrapper(
+        self.content = to_raw_response_wrapper(
             files.content,
         )
-        self.retrieve_content = (  # pyright: ignore[reportDeprecated]
-            _legacy_response.to_raw_response_wrapper(
-                files.retrieve_content  # pyright: ignore[reportDeprecated],
-            )
+        self.retrieve_content = to_raw_response_wrapper(  # pyright: ignore[reportDeprecated]
+            files.retrieve_content  # pyright: ignore[reportDeprecated],
         )
 
 
 class AsyncFilesWithRawResponse:
     def __init__(self, files: AsyncFiles) -> None:
-        self.create = _legacy_response.async_to_raw_response_wrapper(
+        self.create = async_to_raw_response_wrapper(
             files.create,
         )
-        self.retrieve = _legacy_response.async_to_raw_response_wrapper(
+        self.retrieve = async_to_raw_response_wrapper(
             files.retrieve,
         )
-        self.list = _legacy_response.async_to_raw_response_wrapper(
+        self.list = async_to_raw_response_wrapper(
             files.list,
         )
-        self.delete = _legacy_response.async_to_raw_response_wrapper(
+        self.delete = async_to_raw_response_wrapper(
             files.delete,
         )
-        self.content = _legacy_response.async_to_raw_response_wrapper(
+        self.content = async_to_raw_response_wrapper(
             files.content,
         )
-        self.retrieve_content = (  # pyright: ignore[reportDeprecated]
-            _legacy_response.async_to_raw_response_wrapper(
-                files.retrieve_content  # pyright: ignore[reportDeprecated],
-            )
-        )
-
-
-class FilesWithStreamingResponse:
-    def __init__(self, files: Files) -> None:
-        self.create = to_streamed_response_wrapper(
-            files.create,
-        )
-        self.retrieve = to_streamed_response_wrapper(
-            files.retrieve,
-        )
-        self.list = to_streamed_response_wrapper(
-            files.list,
-        )
-        self.delete = to_streamed_response_wrapper(
-            files.delete,
-        )
-        self.content = to_custom_streamed_response_wrapper(
-            files.content,
-            StreamedBinaryAPIResponse,
-        )
-        self.retrieve_content = (  # pyright: ignore[reportDeprecated]
-            to_streamed_response_wrapper(
-                files.retrieve_content  # pyright: ignore[reportDeprecated],
-            )
-        )
-
-
-class AsyncFilesWithStreamingResponse:
-    def __init__(self, files: AsyncFiles) -> None:
-        self.create = async_to_streamed_response_wrapper(
-            files.create,
-        )
-        self.retrieve = async_to_streamed_response_wrapper(
-            files.retrieve,
-        )
-        self.list = async_to_streamed_response_wrapper(
-            files.list,
-        )
-        self.delete = async_to_streamed_response_wrapper(
-            files.delete,
-        )
-        self.content = async_to_custom_streamed_response_wrapper(
-            files.content,
-            AsyncStreamedBinaryAPIResponse,
-        )
-        self.retrieve_content = (  # pyright: ignore[reportDeprecated]
-            async_to_streamed_response_wrapper(
-                files.retrieve_content  # pyright: ignore[reportDeprecated],
-            )
+        self.retrieve_content = async_to_raw_response_wrapper(  # pyright: ignore[reportDeprecated]
+            files.retrieve_content  # pyright: ignore[reportDeprecated],
         )

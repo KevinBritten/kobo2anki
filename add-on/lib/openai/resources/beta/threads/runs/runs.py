@@ -7,20 +7,12 @@ from typing_extensions import Literal
 
 import httpx
 
-from ..... import _legacy_response
-from .steps import (
-    Steps,
-    AsyncSteps,
-    StepsWithRawResponse,
-    AsyncStepsWithRawResponse,
-    StepsWithStreamingResponse,
-    AsyncStepsWithStreamingResponse,
-)
+from .steps import Steps, AsyncSteps, StepsWithRawResponse, AsyncStepsWithRawResponse
 from ....._types import NOT_GIVEN, Body, Query, Headers, NotGiven
 from ....._utils import maybe_transform
 from ....._compat import cached_property
 from ....._resource import SyncAPIResource, AsyncAPIResource
-from ....._response import to_streamed_response_wrapper, async_to_streamed_response_wrapper
+from ....._response import to_raw_response_wrapper, async_to_raw_response_wrapper
 from .....pagination import SyncCursorPage, AsyncCursorPage
 from ....._base_client import (
     AsyncPaginator,
@@ -45,10 +37,6 @@ class Runs(SyncAPIResource):
     @cached_property
     def with_raw_response(self) -> RunsWithRawResponse:
         return RunsWithRawResponse(self)
-
-    @cached_property
-    def with_streaming_response(self) -> RunsWithStreamingResponse:
-        return RunsWithStreamingResponse(self)
 
     def create(
         self,
@@ -104,8 +92,6 @@ class Runs(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return self._post(
             f"/threads/{thread_id}/runs",
@@ -150,10 +136,6 @@ class Runs(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
-        if not run_id:
-            raise ValueError(f"Expected a non-empty value for `run_id` but received {run_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return self._get(
             f"/threads/{thread_id}/runs/{run_id}",
@@ -193,10 +175,6 @@ class Runs(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
-        if not run_id:
-            raise ValueError(f"Expected a non-empty value for `run_id` but received {run_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return self._post(
             f"/threads/{thread_id}/runs/{run_id}",
@@ -250,8 +228,6 @@ class Runs(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return self._get_api_list(
             f"/threads/{thread_id}/runs",
@@ -298,10 +274,6 @@ class Runs(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
-        if not run_id:
-            raise ValueError(f"Expected a non-empty value for `run_id` but received {run_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return self._post(
             f"/threads/{thread_id}/runs/{run_id}/cancel",
@@ -341,10 +313,6 @@ class Runs(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
-        if not run_id:
-            raise ValueError(f"Expected a non-empty value for `run_id` but received {run_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return self._post(
             f"/threads/{thread_id}/runs/{run_id}/submit_tool_outputs",
@@ -366,10 +334,6 @@ class AsyncRuns(AsyncAPIResource):
     @cached_property
     def with_raw_response(self) -> AsyncRunsWithRawResponse:
         return AsyncRunsWithRawResponse(self)
-
-    @cached_property
-    def with_streaming_response(self) -> AsyncRunsWithStreamingResponse:
-        return AsyncRunsWithStreamingResponse(self)
 
     async def create(
         self,
@@ -425,8 +389,6 @@ class AsyncRuns(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return await self._post(
             f"/threads/{thread_id}/runs",
@@ -471,10 +433,6 @@ class AsyncRuns(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
-        if not run_id:
-            raise ValueError(f"Expected a non-empty value for `run_id` but received {run_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return await self._get(
             f"/threads/{thread_id}/runs/{run_id}",
@@ -514,10 +472,6 @@ class AsyncRuns(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
-        if not run_id:
-            raise ValueError(f"Expected a non-empty value for `run_id` but received {run_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return await self._post(
             f"/threads/{thread_id}/runs/{run_id}",
@@ -571,8 +525,6 @@ class AsyncRuns(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return self._get_api_list(
             f"/threads/{thread_id}/runs",
@@ -619,10 +571,6 @@ class AsyncRuns(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
-        if not run_id:
-            raise ValueError(f"Expected a non-empty value for `run_id` but received {run_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return await self._post(
             f"/threads/{thread_id}/runs/{run_id}/cancel",
@@ -662,10 +610,6 @@ class AsyncRuns(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not thread_id:
-            raise ValueError(f"Expected a non-empty value for `thread_id` but received {thread_id!r}")
-        if not run_id:
-            raise ValueError(f"Expected a non-empty value for `run_id` but received {run_id!r}")
         extra_headers = {"OpenAI-Beta": "assistants=v1", **(extra_headers or {})}
         return await self._post(
             f"/threads/{thread_id}/runs/{run_id}/submit_tool_outputs",
@@ -683,22 +627,22 @@ class RunsWithRawResponse:
     def __init__(self, runs: Runs) -> None:
         self.steps = StepsWithRawResponse(runs.steps)
 
-        self.create = _legacy_response.to_raw_response_wrapper(
+        self.create = to_raw_response_wrapper(
             runs.create,
         )
-        self.retrieve = _legacy_response.to_raw_response_wrapper(
+        self.retrieve = to_raw_response_wrapper(
             runs.retrieve,
         )
-        self.update = _legacy_response.to_raw_response_wrapper(
+        self.update = to_raw_response_wrapper(
             runs.update,
         )
-        self.list = _legacy_response.to_raw_response_wrapper(
+        self.list = to_raw_response_wrapper(
             runs.list,
         )
-        self.cancel = _legacy_response.to_raw_response_wrapper(
+        self.cancel = to_raw_response_wrapper(
             runs.cancel,
         )
-        self.submit_tool_outputs = _legacy_response.to_raw_response_wrapper(
+        self.submit_tool_outputs = to_raw_response_wrapper(
             runs.submit_tool_outputs,
         )
 
@@ -707,69 +651,21 @@ class AsyncRunsWithRawResponse:
     def __init__(self, runs: AsyncRuns) -> None:
         self.steps = AsyncStepsWithRawResponse(runs.steps)
 
-        self.create = _legacy_response.async_to_raw_response_wrapper(
+        self.create = async_to_raw_response_wrapper(
             runs.create,
         )
-        self.retrieve = _legacy_response.async_to_raw_response_wrapper(
+        self.retrieve = async_to_raw_response_wrapper(
             runs.retrieve,
         )
-        self.update = _legacy_response.async_to_raw_response_wrapper(
+        self.update = async_to_raw_response_wrapper(
             runs.update,
         )
-        self.list = _legacy_response.async_to_raw_response_wrapper(
+        self.list = async_to_raw_response_wrapper(
             runs.list,
         )
-        self.cancel = _legacy_response.async_to_raw_response_wrapper(
+        self.cancel = async_to_raw_response_wrapper(
             runs.cancel,
         )
-        self.submit_tool_outputs = _legacy_response.async_to_raw_response_wrapper(
-            runs.submit_tool_outputs,
-        )
-
-
-class RunsWithStreamingResponse:
-    def __init__(self, runs: Runs) -> None:
-        self.steps = StepsWithStreamingResponse(runs.steps)
-
-        self.create = to_streamed_response_wrapper(
-            runs.create,
-        )
-        self.retrieve = to_streamed_response_wrapper(
-            runs.retrieve,
-        )
-        self.update = to_streamed_response_wrapper(
-            runs.update,
-        )
-        self.list = to_streamed_response_wrapper(
-            runs.list,
-        )
-        self.cancel = to_streamed_response_wrapper(
-            runs.cancel,
-        )
-        self.submit_tool_outputs = to_streamed_response_wrapper(
-            runs.submit_tool_outputs,
-        )
-
-
-class AsyncRunsWithStreamingResponse:
-    def __init__(self, runs: AsyncRuns) -> None:
-        self.steps = AsyncStepsWithStreamingResponse(runs.steps)
-
-        self.create = async_to_streamed_response_wrapper(
-            runs.create,
-        )
-        self.retrieve = async_to_streamed_response_wrapper(
-            runs.retrieve,
-        )
-        self.update = async_to_streamed_response_wrapper(
-            runs.update,
-        )
-        self.list = async_to_streamed_response_wrapper(
-            runs.list,
-        )
-        self.cancel = async_to_streamed_response_wrapper(
-            runs.cancel,
-        )
-        self.submit_tool_outputs = async_to_streamed_response_wrapper(
+        self.submit_tool_outputs = async_to_raw_response_wrapper(
             runs.submit_tool_outputs,
         )

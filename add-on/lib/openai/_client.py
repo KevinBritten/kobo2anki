@@ -58,7 +58,6 @@ class OpenAI(SyncAPIClient):
     fine_tuning: resources.FineTuning
     beta: resources.Beta
     with_raw_response: OpenAIWithRawResponse
-    with_streaming_response: OpenAIWithStreamedResponse
 
     # client options
     api_key: str
@@ -133,7 +132,6 @@ class OpenAI(SyncAPIClient):
         self.fine_tuning = resources.FineTuning(self)
         self.beta = resources.Beta(self)
         self.with_raw_response = OpenAIWithRawResponse(self)
-        self.with_streaming_response = OpenAIWithStreamedResponse(self)
 
     @property
     @override
@@ -256,7 +254,6 @@ class AsyncOpenAI(AsyncAPIClient):
     fine_tuning: resources.AsyncFineTuning
     beta: resources.AsyncBeta
     with_raw_response: AsyncOpenAIWithRawResponse
-    with_streaming_response: AsyncOpenAIWithStreamedResponse
 
     # client options
     api_key: str
@@ -331,7 +328,6 @@ class AsyncOpenAI(AsyncAPIClient):
         self.fine_tuning = resources.AsyncFineTuning(self)
         self.beta = resources.AsyncBeta(self)
         self.with_raw_response = AsyncOpenAIWithRawResponse(self)
-        self.with_streaming_response = AsyncOpenAIWithStreamedResponse(self)
 
     @property
     @override
@@ -468,34 +464,6 @@ class AsyncOpenAIWithRawResponse:
         self.models = resources.AsyncModelsWithRawResponse(client.models)
         self.fine_tuning = resources.AsyncFineTuningWithRawResponse(client.fine_tuning)
         self.beta = resources.AsyncBetaWithRawResponse(client.beta)
-
-
-class OpenAIWithStreamedResponse:
-    def __init__(self, client: OpenAI) -> None:
-        self.completions = resources.CompletionsWithStreamingResponse(client.completions)
-        self.chat = resources.ChatWithStreamingResponse(client.chat)
-        self.embeddings = resources.EmbeddingsWithStreamingResponse(client.embeddings)
-        self.files = resources.FilesWithStreamingResponse(client.files)
-        self.images = resources.ImagesWithStreamingResponse(client.images)
-        self.audio = resources.AudioWithStreamingResponse(client.audio)
-        self.moderations = resources.ModerationsWithStreamingResponse(client.moderations)
-        self.models = resources.ModelsWithStreamingResponse(client.models)
-        self.fine_tuning = resources.FineTuningWithStreamingResponse(client.fine_tuning)
-        self.beta = resources.BetaWithStreamingResponse(client.beta)
-
-
-class AsyncOpenAIWithStreamedResponse:
-    def __init__(self, client: AsyncOpenAI) -> None:
-        self.completions = resources.AsyncCompletionsWithStreamingResponse(client.completions)
-        self.chat = resources.AsyncChatWithStreamingResponse(client.chat)
-        self.embeddings = resources.AsyncEmbeddingsWithStreamingResponse(client.embeddings)
-        self.files = resources.AsyncFilesWithStreamingResponse(client.files)
-        self.images = resources.AsyncImagesWithStreamingResponse(client.images)
-        self.audio = resources.AsyncAudioWithStreamingResponse(client.audio)
-        self.moderations = resources.AsyncModerationsWithStreamingResponse(client.moderations)
-        self.models = resources.AsyncModelsWithStreamingResponse(client.models)
-        self.fine_tuning = resources.AsyncFineTuningWithStreamingResponse(client.fine_tuning)
-        self.beta = resources.AsyncBetaWithStreamingResponse(client.beta)
 
 
 Client = OpenAI

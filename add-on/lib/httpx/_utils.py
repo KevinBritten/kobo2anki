@@ -1,6 +1,5 @@
 import codecs
 import email.message
-import ipaddress
 import mimetypes
 import os
 import re
@@ -91,6 +90,41 @@ def format_form_param(name: str, value: str) -> bytes:
     return f'{name}="{value}"'.encode()
 
 
+# Null bytes; no need to recreate these on each call to guess_json_utf
+_null = b"\x00"
+_null2 = _null * 2
+_null3 = _null * 3
+
+
+def guess_json_utf(data: bytes) -> typing.Optional[str]:
+    # JSON always starts with two ASCII characters, so detection is as
+    # easy as counting the nulls and from their location and count
+    # determine the encoding. Also detect a BOM, if present.
+    sample = data[:4]
+    if sample in (codecs.BOM_UTF32_LE, codecs.BOM_UTF32_BE):
+        return "utf-32"  # BOM included
+    if sample[:3] == codecs.BOM_UTF8:
+        return "utf-8-sig"  # BOM included, MS style (discouraged)
+    if sample[:2] in (codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE):
+        return "utf-16"  # BOM included
+    nullcount = sample.count(_null)
+    if nullcount == 0:
+        return "utf-8"
+    if nullcount == 2:
+        if sample[::2] == _null2:  # 1st and 3rd are null
+            return "utf-16-be"
+        if sample[1::2] == _null2:  # 2nd and 4th are null
+            return "utf-16-le"
+        # Did not detect 2 valid UTF-16 ascii-range characters
+    if nullcount == 3:
+        if sample[:3] == _null3:
+            return "utf-32-be"
+        if sample[1:] == _null3:
+            return "utf-32-le"
+        # Did not detect a valid UTF-32 ascii-range character
+    return None
+
+
 def get_ca_bundle_from_env() -> typing.Optional[str]:
     if "SSL_CERT_FILE" in os.environ:
         ssl_file = Path(os.environ["SSL_CERT_FILE"])
@@ -152,7 +186,7 @@ SENSITIVE_HEADERS = {"authorization", "proxy-authorization"}
 
 
 def obfuscate_sensitive_headers(
-    items: typing.Iterable[typing.Tuple[typing.AnyStr, typing.AnyStr]],
+    items: typing.Iterable[typing.Tuple[typing.AnyStr, typing.AnyStr]]
 ) -> typing.Iterator[typing.Tuple[typing.AnyStr, typing.AnyStr]]:
     for k, v in items:
         if to_str(k.lower()) in SENSITIVE_HEADERS:
@@ -225,18 +259,7 @@ def get_environment_proxies() -> typing.Dict[str, typing.Optional[str]]:
             # NO_PROXY=google.com is marked as "all://*google.com,
             #   which disables "www.google.com" and "google.com".
             #   (But not "wwwgoogle.com")
-            # NO_PROXY can include domains, IPv6, IPv4 addresses and "localhost"
-            #   NO_PROXY=example.com,::1,localhost,192.168.0.0/16
-            if "://" in hostname:
-                mounts[hostname] = None
-            elif is_ipv4_hostname(hostname):
-                mounts[f"all://{hostname}"] = None
-            elif is_ipv6_hostname(hostname):
-                mounts[f"all://[{hostname}]"] = None
-            elif hostname.lower() == "localhost":
-                mounts[f"all://{hostname}"] = None
-            else:
-                mounts[f"all://*{hostname}"] = None
+            mounts[f"all://*{hostname}"] = None
 
     return mounts
 
@@ -295,10 +318,14 @@ class Timer:
             import trio
 
             return trio.current_time()
-        else:
-            import asyncio
+        elif library == "curio":  # pragma: no cover
+            import curio
 
-            return asyncio.get_event_loop().time()
+            return typing.cast(float, await curio.clock())
+
+        import asyncio
+
+        return asyncio.get_event_loop().time()
 
     def sync_start(self) -> None:
         self.started = time.perf_counter()
@@ -320,12 +347,12 @@ class URLPattern:
     A utility class currently used for making lookups against proxy keys...
 
     # Wildcard matching...
-    >>> pattern = URLPattern("all://")
+    >>> pattern = URLPattern("all")
     >>> pattern.matches(httpx.URL("http://example.com"))
     True
 
     # Witch scheme matching...
-    >>> pattern = URLPattern("https://")
+    >>> pattern = URLPattern("https")
     >>> pattern.matches(httpx.URL("https://example.com"))
     True
     >>> pattern.matches(httpx.URL("http://example.com"))
@@ -422,19 +449,3 @@ class URLPattern:
 
     def __eq__(self, other: typing.Any) -> bool:
         return isinstance(other, URLPattern) and self.pattern == other.pattern
-
-
-def is_ipv4_hostname(hostname: str) -> bool:
-    try:
-        ipaddress.IPv4Address(hostname.split("/")[0])
-    except Exception:
-        return False
-    return True
-
-
-def is_ipv6_hostname(hostname: str) -> bool:
-    try:
-        ipaddress.IPv6Address(hostname.split("/")[0])
-    except Exception:
-        return False
-    return True

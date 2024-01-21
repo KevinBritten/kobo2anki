@@ -2,6 +2,8 @@ import threading
 from types import TracebackType
 from typing import Optional, Type
 
+import sniffio
+
 from ._exceptions import ExceptionMapping, PoolTimeout, map_exceptions
 
 # Our async synchronization primatives use either 'anyio' or 'trio' depending
@@ -18,32 +20,6 @@ except ImportError:  # pragma: nocover
     anyio = None  # type: ignore
 
 
-def current_async_library() -> str:
-    # Determine if we're running under trio or asyncio.
-    # See https://sniffio.readthedocs.io/en/latest/
-    try:
-        import sniffio
-    except ImportError:  # pragma: nocover
-        environment = "asyncio"
-    else:
-        environment = sniffio.current_async_library()
-
-    if environment not in ("asyncio", "trio"):  # pragma: nocover
-        raise RuntimeError("Running under an unsupported async environment.")
-
-    if environment == "asyncio" and anyio is None:  # pragma: nocover
-        raise RuntimeError(
-            "Running with asyncio requires installation of 'httpcore[asyncio]'."
-        )
-
-    if environment == "trio" and trio is None:  # pragma: nocover
-        raise RuntimeError(
-            "Running with trio requires installation of 'httpcore[trio]'."
-        )
-
-    return environment
-
-
 class AsyncLock:
     def __init__(self) -> None:
         self._backend = ""
@@ -53,10 +29,18 @@ class AsyncLock:
         Detect if we're running under 'asyncio' or 'trio' and create
         a lock with the correct implementation.
         """
-        self._backend = current_async_library()
+        self._backend = sniffio.current_async_library()
         if self._backend == "trio":
+            if trio is None:  # pragma: nocover
+                raise RuntimeError(
+                    "Running under trio, requires the 'trio' package to be installed."
+                )
             self._trio_lock = trio.Lock()
-        elif self._backend == "asyncio":
+        else:
+            if anyio is None:  # pragma: nocover
+                raise RuntimeError(
+                    "Running under asyncio requires the 'anyio' package to be installed."
+                )
             self._anyio_lock = anyio.Lock()
 
     async def __aenter__(self) -> "AsyncLock":
@@ -65,7 +49,7 @@ class AsyncLock:
 
         if self._backend == "trio":
             await self._trio_lock.acquire()
-        elif self._backend == "asyncio":
+        else:
             await self._anyio_lock.acquire()
 
         return self
@@ -78,7 +62,7 @@ class AsyncLock:
     ) -> None:
         if self._backend == "trio":
             self._trio_lock.release()
-        elif self._backend == "asyncio":
+        else:
             self._anyio_lock.release()
 
 
@@ -91,10 +75,18 @@ class AsyncEvent:
         Detect if we're running under 'asyncio' or 'trio' and create
         a lock with the correct implementation.
         """
-        self._backend = current_async_library()
+        self._backend = sniffio.current_async_library()
         if self._backend == "trio":
+            if trio is None:  # pragma: nocover
+                raise RuntimeError(
+                    "Running under trio requires the 'trio' package to be installed."
+                )
             self._trio_event = trio.Event()
-        elif self._backend == "asyncio":
+        else:
+            if anyio is None:  # pragma: nocover
+                raise RuntimeError(
+                    "Running under asyncio requires the 'anyio' package to be installed."
+                )
             self._anyio_event = anyio.Event()
 
     def set(self) -> None:
@@ -103,7 +95,7 @@ class AsyncEvent:
 
         if self._backend == "trio":
             self._trio_event.set()
-        elif self._backend == "asyncio":
+        else:
             self._anyio_event.set()
 
     async def wait(self, timeout: Optional[float] = None) -> None:
@@ -111,12 +103,22 @@ class AsyncEvent:
             self.setup()
 
         if self._backend == "trio":
+            if trio is None:  # pragma: nocover
+                raise RuntimeError(
+                    "Running under trio requires the 'trio' package to be installed."
+                )
+
             trio_exc_map: ExceptionMapping = {trio.TooSlowError: PoolTimeout}
             timeout_or_inf = float("inf") if timeout is None else timeout
             with map_exceptions(trio_exc_map):
                 with trio.fail_after(timeout_or_inf):
                     await self._trio_event.wait()
-        elif self._backend == "asyncio":
+        else:
+            if anyio is None:  # pragma: nocover
+                raise RuntimeError(
+                    "Running under asyncio requires the 'anyio' package to be installed."
+                )
+
             anyio_exc_map: ExceptionMapping = {TimeoutError: PoolTimeout}
             with map_exceptions(anyio_exc_map):
                 with anyio.fail_after(timeout):
@@ -133,12 +135,22 @@ class AsyncSemaphore:
         Detect if we're running under 'asyncio' or 'trio' and create
         a semaphore with the correct implementation.
         """
-        self._backend = current_async_library()
+        self._backend = sniffio.current_async_library()
         if self._backend == "trio":
+            if trio is None:  # pragma: nocover
+                raise RuntimeError(
+                    "Running under trio requires the 'trio' package to be installed."
+                )
+
             self._trio_semaphore = trio.Semaphore(
                 initial_value=self._bound, max_value=self._bound
             )
-        elif self._backend == "asyncio":
+        else:
+            if anyio is None:  # pragma: nocover
+                raise RuntimeError(
+                    "Running under asyncio requires the 'anyio' package to be installed."
+                )
+
             self._anyio_semaphore = anyio.Semaphore(
                 initial_value=self._bound, max_value=self._bound
             )
@@ -149,13 +161,13 @@ class AsyncSemaphore:
 
         if self._backend == "trio":
             await self._trio_semaphore.acquire()
-        elif self._backend == "asyncio":
+        else:
             await self._anyio_semaphore.acquire()
 
     async def release(self) -> None:
         if self._backend == "trio":
             self._trio_semaphore.release()
-        elif self._backend == "asyncio":
+        else:
             self._anyio_semaphore.release()
 
 
@@ -172,17 +184,27 @@ class AsyncShieldCancellation:
         Detect if we're running under 'asyncio' or 'trio' and create
         a shielded scope with the correct implementation.
         """
-        self._backend = current_async_library()
+        self._backend = sniffio.current_async_library()
 
         if self._backend == "trio":
+            if trio is None:  # pragma: nocover
+                raise RuntimeError(
+                    "Running under trio requires the 'trio' package to be installed."
+                )
+
             self._trio_shield = trio.CancelScope(shield=True)
-        elif self._backend == "asyncio":
+        else:
+            if anyio is None:  # pragma: nocover
+                raise RuntimeError(
+                    "Running under asyncio requires the 'anyio' package to be installed."
+                )
+
             self._anyio_shield = anyio.CancelScope(shield=True)
 
     def __enter__(self) -> "AsyncShieldCancellation":
         if self._backend == "trio":
             self._trio_shield.__enter__()
-        elif self._backend == "asyncio":
+        else:
             self._anyio_shield.__enter__()
         return self
 
@@ -194,7 +216,7 @@ class AsyncShieldCancellation:
     ) -> None:
         if self._backend == "trio":
             self._trio_shield.__exit__(exc_type, exc_value, traceback)
-        elif self._backend == "asyncio":
+        else:
             self._anyio_shield.__exit__(exc_type, exc_value, traceback)
 
 
@@ -226,8 +248,6 @@ class Event:
         self._event.set()
 
     def wait(self, timeout: Optional[float] = None) -> None:
-        if timeout == float("inf"):  # pragma: no cover
-            timeout = None
         if not self._event.wait(timeout=timeout):
             raise PoolTimeout()  # pragma: nocover
 

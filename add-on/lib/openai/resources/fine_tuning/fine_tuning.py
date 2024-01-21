@@ -2,14 +2,7 @@
 
 from __future__ import annotations
 
-from .jobs import (
-    Jobs,
-    AsyncJobs,
-    JobsWithRawResponse,
-    AsyncJobsWithRawResponse,
-    JobsWithStreamingResponse,
-    AsyncJobsWithStreamingResponse,
-)
+from .jobs import Jobs, AsyncJobs, JobsWithRawResponse, AsyncJobsWithRawResponse
 from ..._compat import cached_property
 from ..._resource import SyncAPIResource, AsyncAPIResource
 
@@ -25,10 +18,6 @@ class FineTuning(SyncAPIResource):
     def with_raw_response(self) -> FineTuningWithRawResponse:
         return FineTuningWithRawResponse(self)
 
-    @cached_property
-    def with_streaming_response(self) -> FineTuningWithStreamingResponse:
-        return FineTuningWithStreamingResponse(self)
-
 
 class AsyncFineTuning(AsyncAPIResource):
     @cached_property
@@ -39,10 +28,6 @@ class AsyncFineTuning(AsyncAPIResource):
     def with_raw_response(self) -> AsyncFineTuningWithRawResponse:
         return AsyncFineTuningWithRawResponse(self)
 
-    @cached_property
-    def with_streaming_response(self) -> AsyncFineTuningWithStreamingResponse:
-        return AsyncFineTuningWithStreamingResponse(self)
-
 
 class FineTuningWithRawResponse:
     def __init__(self, fine_tuning: FineTuning) -> None:
@@ -52,13 +37,3 @@ class FineTuningWithRawResponse:
 class AsyncFineTuningWithRawResponse:
     def __init__(self, fine_tuning: AsyncFineTuning) -> None:
         self.jobs = AsyncJobsWithRawResponse(fine_tuning.jobs)
-
-
-class FineTuningWithStreamingResponse:
-    def __init__(self, fine_tuning: FineTuning) -> None:
-        self.jobs = JobsWithStreamingResponse(fine_tuning.jobs)
-
-
-class AsyncFineTuningWithStreamingResponse:
-    def __init__(self, fine_tuning: AsyncFineTuning) -> None:
-        self.jobs = AsyncJobsWithStreamingResponse(fine_tuning.jobs)
