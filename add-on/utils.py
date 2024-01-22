@@ -5,11 +5,18 @@ from anki.notes import Note
 from aqt import mw
 from aqt.qt import QDialog, QVBoxLayout, QLabel, QPushButton
 import os
+import sys
 import xml.etree.ElementTree as ET
 from datetime import datetime
-# from openai import OpenAI
 
+lib_path = os.path.join(os.path.dirname(__file__), 'lib')
+sys.path.insert(0, lib_path)
+from openai import OpenAI
 
+client = OpenAI(
+    # This is the default and can be omitted
+    api_key="",
+)
 
 def extract_words_from_kobo():
     conn = sqlite3.connect('F:\.kobo\KoboReader.sqlite')
@@ -36,11 +43,9 @@ def get_annotations(folder_path):
                 identifier = annotation_elem.find(".//dc:identifier", namespaces).text
                 date_str = annotation_elem.find(".//dc:date", namespaces).text
                 date = parse_date(date_str)
-                print(dir(annotation_elem.find(".//ns:target/", namespaces)))
                 # Find the text element under fragment
                 text_elem = annotation_elem.find(".//ns:target/ns:fragment/ns:text", namespaces)
                 text = text_elem.text if text_elem is not None else None                
-                print(text)
                 # Add to annotations dictionary
                 annotations[identifier] = {'text': text, 'timestamp': date}
 
@@ -63,19 +68,28 @@ def create_anki_cards(pairs):
     deck_name = "Test"
     # Get the default deck ID as an integer
     deck_id = mw.col.decks.id(deck_name)
-    print(deck_id)
     
     # Iterate through the words and create Anki cards
     for pair in pairs:
         word = pair['word']
         matching_annotation = pair['matching_annotation']
-        print(type(word))
+        prompt = f"Define {word} in the context of the following sentence: {matching_annotation}"
+        response = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        model="gpt-3.5-turbo",
+        )
+        print(response.choices[0])
+        definition = response.choices[0].message.content
         # Create a new note
         note = mw.col.new_note(1704410557575)  # Include the reference to the Anki collection
         # Set the word as the front of the card
-        note["Back"] = word
+        note["Back"] = word + ' - ' + definition
         note["Front"] = matching_annotation
-        print(note.fields)
       
         mw.col.add_note(note,deck_id)
 
@@ -104,9 +118,6 @@ def show_confirmation_dialog(words):
     # Add a label
     label = QLabel("Do you want to create Anki cards for the following words?")
     layout.addWidget(label)
-
-    # print(dir(OpenAI))
-
 
     # Add the list of words
     for word_tuple in words:
