@@ -3,7 +3,7 @@ import sqlite3
 import traceback
 from anki.notes import Note
 from aqt import mw
-from aqt.qt import QDialog, QVBoxLayout, QLabel, QPushButton
+from aqt.qt import QDialog, QVBoxLayout, QLabel, QPushButton, QMessageBox
 import os
 import sys
 import xml.etree.ElementTree as ET
@@ -74,6 +74,7 @@ def create_anki_cards(pairs):
     deck_name = "Test"
     # Get the default deck ID as an integer
     deck_id = mw.col.decks.id(deck_name)
+    cards_added = 0
     
     # Iterate through the words and create Anki cards
     for pair in pairs:
@@ -98,9 +99,12 @@ def create_anki_cards(pairs):
         note["Front"] = matching_annotation
       
         mw.col.add_note(note,deck_id)
+        cards_added += 1
 
 
     mw.reset()
+    return cards_added
+    
 
 
 def parse_date(date_str):
@@ -113,35 +117,35 @@ def parse_date(date_str):
 
 
 def show_confirmation_dialog(words):
-    # Create a confirmation dialog
     dialog = QDialog(mw)
     dialog.setWindowTitle("Confirmation")
     dialog.setGeometry(100, 100, 300, 150)
-
-    # Create a layout
     layout = QVBoxLayout(dialog)
 
-    # Add a label
     label = QLabel("Do you want to create Anki cards for the following words?")
     layout.addWidget(label)
 
-    # Add the list of words
     for word_tuple in words:
-        word = word_tuple[0]  # Assuming the word is in the first position of the tuple
-        label = QLabel(str(word))  # Convert to str to ensure QLabel receives a string
+        word = word_tuple[0]
+        label = QLabel(str(word))
         layout.addWidget(label)
 
+    def on_confirm():
+        # Call the function that creates the cards and get the number of cards added
+        num_cards_added = create_anki_cards(match_annotations_and_words(words, get_annotations("F:/Digital Editions/Annotations/Digital Editions")))
+        
+        # Display a message box with the number of cards added
+        QMessageBox.information(dialog, "Cards Added", f"{num_cards_added} cards added")
+        
+        # Close the original dialog
+        dialog.close()
 
-    # Add Confirm and Cancel buttons
     confirm_button = QPushButton("Confirm")
-    confirm_button.clicked.connect(lambda: create_anki_cards(match_annotations_and_words(words, get_annotations("F:/Digital Editions/Annotations/Digital Editions"))))
-
+    confirm_button.clicked.connect(on_confirm)
     layout.addWidget(confirm_button)
 
     cancel_button = QPushButton("Cancel")
     cancel_button.clicked.connect(dialog.close)
     layout.addWidget(cancel_button)
 
-    # Show the dialog
     dialog.exec()
-    
