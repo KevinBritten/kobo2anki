@@ -13,9 +13,15 @@ lib_path = os.path.join(os.path.dirname(__file__), 'lib')
 sys.path.insert(0, lib_path)
 from openai import OpenAI
 
+def get_api_key():
+    config = mw.addonManager.getConfig(__name__)
+    return config.get("api_key", "")
+
+print(get_api_key())
+
 client = OpenAI(
     # This is the default and can be omitted
-    api_key="",
+    api_key=get_api_key(),
 )
 
 def extract_words_from_kobo():
@@ -138,3 +144,4 @@ def show_confirmation_dialog(words):
 
     # Show the dialog
     dialog.exec()
+    

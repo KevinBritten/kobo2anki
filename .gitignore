@@ -1,2 +1,5 @@
 add-on/__pycache__/
 add-on/lib/__pycache__/
+
+#Saved value from anki preferences (ie api key)
+add-on/meta.json
