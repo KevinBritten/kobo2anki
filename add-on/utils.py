@@ -80,7 +80,7 @@ def create_anki_cards(pairs):
     for pair in pairs:
         word = pair['word']
         matching_annotation = pair['matching_annotation']
-        prompt = f"Define {word} in the context of the following sentence: {matching_annotation}"
+        prompt = f"Define {word} in the context of the following sentence. Provide a dictionary type definition. Don't repeat the word, only output the definition: {matching_annotation}"
         response = client.chat.completions.create(
         messages=[
             {
