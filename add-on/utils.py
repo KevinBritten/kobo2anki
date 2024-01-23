@@ -13,15 +13,10 @@ lib_path = os.path.join(os.path.dirname(__file__), 'lib')
 sys.path.insert(0, lib_path)
 from openai import OpenAI
 
-def get_api_key():
-    config = mw.addonManager.getConfig(__name__)
-    return config.get("api_key", "")
-
-print(get_api_key())
-
+config = mw.addonManager.getConfig(__name__)
 client = OpenAI(
     # This is the default and can be omitted
-    api_key=get_api_key(),
+    api_key=config.get("api_key", ""),
 )
 
 def extract_words_from_kobo():
@@ -76,8 +71,7 @@ def create_anki_cards(pairs):
     deck_name = "Test"
     # Get the default deck ID as an integer
     deck_id = mw.col.decks.id(deck_name)
-    cards_added = 0
-    
+    successful_words = []    
     # Iterate through the words and create Anki cards
     for pair in pairs:
         word = pair['word']
@@ -100,13 +94,35 @@ def create_anki_cards(pairs):
         note["Back"] = word + ' - ' + definition
         note["Front"] = matching_annotation
       
-        mw.col.add_note(note,deck_id)
-        cards_added += 1
-
-
+        if mw.col.add_note(note, deck_id):
+            successful_words.append(word)
+    if config.get("enable_word_deletion", False):
+        delete_successful_words(successful_words)
     mw.reset()
-    return cards_added
+    return successful_words.__len__()
     
+def delete_successful_words(words):
+    # Connect to the SQLite database
+    script_dir = os.path.dirname(__file__)
+    db_path = os.path.join(script_dir, 'test-data', 'KoboReader.sqlite')
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    try:
+        # Prepare the SQL delete query
+        # Use parameter substitution to safely insert the words into the query
+        query = "DELETE FROM WordList WHERE Text IN ({})".format(','.join('?' * len(words)))
+        
+        # Execute the query with the list of words
+        cursor.execute(query, words)
+        
+        # Commit the changes
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+    finally:
+        # Close the connection
+        conn.close()
 
 
 def parse_date(date_str):
