@@ -25,7 +25,9 @@ client = OpenAI(
 )
 
 def extract_words_from_kobo():
-    conn = sqlite3.connect('F:\.kobo\KoboReader.sqlite')
+    script_dir = os.path.dirname(__file__)
+    db_path = os.path.join(script_dir, 'test-data', 'KoboReader.sqlite')
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     query = "SELECT Text, DateCreated FROM WordList"
     cursor.execute(query)
@@ -80,7 +82,7 @@ def create_anki_cards(pairs):
     for pair in pairs:
         word = pair['word']
         matching_annotation = pair['matching_annotation']
-        prompt = f"Define {word} in the context of the following sentence. Provide a dictionary type definition. Don't repeat the word, only output the definition: {matching_annotation}"
+        prompt = f'Translate "{word}" to english. Do not include any text outside of the definition in your response. If there are multiple definitions, use the following sentence for context (Do not repeat the word or the sentence, only output the definition): {matching_annotation}'
         response = client.chat.completions.create(
         messages=[
             {
@@ -132,7 +134,9 @@ def show_confirmation_dialog(words):
 
     def on_confirm():
         # Call the function that creates the cards and get the number of cards added
-        num_cards_added = create_anki_cards(match_annotations_and_words(words, get_annotations("F:/Digital Editions/Annotations/Digital Editions")))
+        script_dir = os.path.dirname(__file__)
+        folder_path = os.path.join(script_dir, 'test-data', 'Digital Editions')
+        num_cards_added = create_anki_cards(match_annotations_and_words(words, get_annotations(folder_path)))
         
         # Display a message box with the number of cards added
         QMessageBox.information(dialog, "Cards Added", f"{num_cards_added} cards added")
