@@ -2,5 +2,6 @@
   "openai_api_key": "",
   "deepl_api_key": "",
   "enable_annotation_deletion": false,
-  "enable_word_deletion": false
+  "enable_word_deletion": false,
+  "api_mode": "deepl"
 }
