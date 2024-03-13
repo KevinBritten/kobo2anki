@@ -4,3 +4,5 @@ add-on/test-data/
 
 #Saved value from anki preferences (ie api key)
 add-on/meta.json
+
+*.pyc
