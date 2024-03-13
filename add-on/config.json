@@ -1,5 +1,6 @@
 {
-  "api_key": "",
+  "openai_api_key": "",
+  "deepl_api_key": "",
   "enable_annotation_deletion": false,
   "enable_word_deletion": false
 }

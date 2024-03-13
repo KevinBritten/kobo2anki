@@ -16,7 +16,7 @@ from openai import OpenAI
 config = mw.addonManager.getConfig(__name__)
 client = OpenAI(
     # This is the default and can be omitted
-    api_key=config.get("api_key", ""),
+    api_key=config.get("openai_api_key", ""),
 )
 
 def extract_words_from_kobo():
