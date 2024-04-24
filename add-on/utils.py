@@ -11,13 +11,25 @@ from datetime import datetime
 
 lib_path = os.path.join(os.path.dirname(__file__), 'lib')
 sys.path.insert(0, lib_path)
-from openai import OpenAI
-
 config = mw.addonManager.getConfig(__name__)
-client = OpenAI(
-    # This is the default and can be omitted
-    api_key=config.get("openai_api_key", ""),
-)
+
+def define_with_open_ai(word, context):
+    from openai import OpenAI
+    client = OpenAI(
+        api_key=config.get("api_key", ""),
+    )
+    prompt = f'Translate "{word}" to english. Do not include any text outside of the definition in your response. If there are multiple definitions, use the following sentence for context (Do not repeat the word or the sentence, only output the definition): {context}'
+    response = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        model="gpt-3.5-turbo",
+        )
+    definition = response.choices[0].message.content
+    return definition
 
 def extract_words_from_kobo():
     script_dir = os.path.dirname(__file__)
@@ -76,18 +88,7 @@ def create_anki_cards(pairs):
     for pair in pairs:
         word = pair['word']
         matching_annotation = pair['matching_annotation']
-        prompt = f'Translate "{word}" to english. Do not include any text outside of the definition in your response. If there are multiple definitions, use the following sentence for context (Do not repeat the word or the sentence, only output the definition): {matching_annotation}'
-        response = client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-            }
-        ],
-        model="gpt-3.5-turbo",
-        )
-        print(response.choices[0])
-        definition = response.choices[0].message.content
+        definition = define_with_open_ai(word,matching_annotation)
         # Create a new note
         note = mw.col.new_note(1704410557575)  # Include the reference to the Anki collection
         # Set the word as the front of the card
