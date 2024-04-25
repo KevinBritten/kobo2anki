@@ -13,6 +13,10 @@ lib_path = os.path.join(os.path.dirname(__file__), 'lib')
 sys.path.insert(0, lib_path)
 config = mw.addonManager.getConfig(__name__)
 
+def define_with_deepl(word,context):
+    # will be written later
+    pass
+
 def define_with_open_ai(word, context):
     from openai import OpenAI
     client = OpenAI(
@@ -30,6 +34,15 @@ def define_with_open_ai(word, context):
         )
     definition = response.choices[0].message.content
     return definition
+
+api_mode = config.get("api_mode", "deepl")  # Default to "deepl" if not specified
+
+if api_mode == "openai":
+    definition_func = define_with_open_ai
+elif api_mode == "deepl":
+    definition_func = define_with_deepl
+else:
+    raise ValueError("Invalid api_mode in config")
 
 def extract_words_from_kobo():
     script_dir = os.path.dirname(__file__)
@@ -88,9 +101,16 @@ def create_anki_cards(pairs):
     for pair in pairs:
         word = pair['word']
         matching_annotation = pair['matching_annotation']
-        definition = define_with_open_ai(word,matching_annotation)
+        definition = definition_func(word,matching_annotation)
+        
+        modelID = None  # Initialize modelID to None
+        models = mw.col.models.all()  # Retrieve all models in the collection
+        for model in models:
+            if model['name'] == "Basic":  # Check if the model name is "Basic"
+                modelID = model['id']  # Store the model ID in modelID
+                break  # Exit the loop once the desired model is found
         # Create a new note
-        note = mw.col.new_note(1704410557575)  # Include the reference to the Anki collection
+        note = mw.col.new_note(modelID)  # Include the reference to the Anki collection
         # Set the word as the front of the card
         note["Back"] = word + ' - ' + definition
         note["Front"] = matching_annotation
