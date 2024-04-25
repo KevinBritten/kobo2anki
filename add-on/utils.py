@@ -16,7 +16,7 @@ config = mw.addonManager.getConfig(__name__)
 def define_with_open_ai(word, context):
     from openai import OpenAI
     client = OpenAI(
-        api_key=config.get("api_key", ""),
+        api_key=config.get("openai_api_key", ""),
     )
     prompt = f'Translate "{word}" to english. Do not include any text outside of the definition in your response. If there are multiple definitions, use the following sentence for context (Do not repeat the word or the sentence, only output the definition): {context}'
     response = client.chat.completions.create(
