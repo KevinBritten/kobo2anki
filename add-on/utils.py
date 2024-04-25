@@ -13,9 +13,23 @@ lib_path = os.path.join(os.path.dirname(__file__), 'lib')
 sys.path.insert(0, lib_path)
 config = mw.addonManager.getConfig(__name__)
 
-def define_with_deepl(word,context):
-    # will be written later
-    pass
+
+def define_with_deepl(word, context):
+    import deepl
+
+    api_key = config.get("deepl_api_key", "")
+    translator = deepl.Translator(api_key)
+    source_lang = "FR"  # French
+    target_lang = "EN-GB"  # English
+    
+    try:
+        translation = translator.translate_text(word, context=context, source_lang=source_lang, target_lang=target_lang, glossary=None) 
+        return translation.text  # or some manipulation if you want to extract the translation of 'word' specifically
+        
+    except Exception as e:
+        print("Error in translating with DeepL:", str(e))
+        return None
+
 
 def define_with_open_ai(word, context):
     from openai import OpenAI
