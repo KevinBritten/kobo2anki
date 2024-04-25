@@ -107,9 +107,10 @@ def match_annotations_and_words(words, annotations):
     return pairs
 
 def create_anki_cards(pairs):
-    deck_name = "Test"
-    # Get the default deck ID as an integer
-    deck_id = mw.col.decks.id(deck_name)
+    # Load the deck ID from the configuration
+    config = mw.addonManager.getConfig(__name__)
+    deck_id = config.get('selected_deck_id')
+    
     successful_words = []    
     # Iterate through the words and create Anki cards
     for pair in pairs:

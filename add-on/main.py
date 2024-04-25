@@ -1,8 +1,13 @@
 # main.py
 from aqt import mw
+from aqt.qt import *
+from aqt.utils import showInfo
 from .utils import extract_words_from_kobo, create_anki_cards, show_confirmation_dialog
 
 def main_function():
+    open_main_menu()
+
+def translate_words():
     # Step 1: Extract words from Kobo
     words = extract_words_from_kobo()
 
@@ -10,3 +15,69 @@ def main_function():
     show_confirmation_dialog(words)
 
 # Your Anki menu action setup can go here
+
+from aqt import mw
+from aqt.qt import *
+from aqt.utils import showInfo
+
+def open_options():
+    dialog = QDialog(mw)
+    dialog.setWindowTitle("Options")
+    
+    layout = QVBoxLayout(dialog)
+    
+    # Create a combo box to list decks
+    combo_decks = QComboBox()
+    decks = mw.col.decks.all_names_and_ids()
+    for deck in decks:
+        combo_decks.addItem(deck.name, deck.id)
+    
+    # Load the currently selected deck ID from config
+    config = mw.addonManager.getConfig(__name__)
+    selected_deck_id = config.get('selected_deck_id', None)
+    if selected_deck_id:
+        index = combo_decks.findData(selected_deck_id)
+        if index >= 0:
+            combo_decks.setCurrentIndex(index)
+    
+    layout.addWidget(combo_decks)
+    
+    # Button to save the selection
+    btn_save = QPushButton("Save")
+    def save_selection():
+        # Save the selected deck ID to config
+        selected_index = combo_decks.currentIndex()
+        selected_id = combo_decks.itemData(selected_index)
+        config['selected_deck_id'] = selected_id
+        mw.addonManager.writeConfig(__name__, config)
+        showInfo(f"Selection saved: {combo_decks.currentText()}")
+    
+    btn_save.clicked.connect(save_selection)
+    layout.addWidget(btn_save)
+    
+    dialog.setLayout(layout)
+    dialog.exec()
+
+def open_main_menu():
+    # Create a QDialog
+    dialog = QDialog(mw)
+    dialog.setWindowTitle("Main Menu")
+    
+    # Layout for buttons
+    layout = QVBoxLayout()
+    
+    # Button for translating words
+    btn_translate = QPushButton("Translate Words")
+    btn_translate.clicked.connect(translate_words)  # Connect button to function
+    layout.addWidget(btn_translate)
+    
+    # Button for opening options
+    btn_options = QPushButton("Options")
+    btn_options.clicked.connect(open_options)  # Connect button to function
+    layout.addWidget(btn_options)
+    
+    # Set layout on QDialog
+    dialog.setLayout(layout)
+    
+    # Show the dialog
+    dialog.exec()
