@@ -41,6 +41,12 @@ def open_options():
             combo_decks.setCurrentIndex(index)
     
     layout.addWidget(combo_decks)
+
+    # Create checkbox for enabling word deletion
+    checkbox_delete = QCheckBox("Enable Word Deletion")
+    enable_word_deletion = config.get('enable_word_deletion', False)
+    checkbox_delete.setChecked(enable_word_deletion)
+    layout.addWidget(checkbox_delete)
     
     # Button to save the selection
     btn_save = QPushButton("Save")
@@ -49,8 +55,12 @@ def open_options():
         selected_index = combo_decks.currentIndex()
         selected_id = combo_decks.itemData(selected_index)
         config['selected_deck_id'] = selected_id
+
+        # Save the state of the checkbox to config
+        config['enable_word_deletion'] = checkbox_delete.isChecked()
         mw.addonManager.writeConfig(__name__, config)
-        showInfo(f"Selection saved: {combo_decks.currentText()}")
+        dialog.close()
+    
     
     btn_save.clicked.connect(save_selection)
     layout.addWidget(btn_save)
