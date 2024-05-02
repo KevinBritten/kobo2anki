@@ -48,8 +48,9 @@ def open_options():
     checkbox_delete.setChecked(enable_word_deletion)
     layout.addWidget(checkbox_delete)
     
-    # Button to save the selection
+    save_cancel_layout = QHBoxLayout()
     btn_save = QPushButton("Save")
+    btn_cancel = QPushButton("Cancel")
     def save_selection():
         # Save the selected deck ID to config
         selected_index = combo_decks.currentIndex()
@@ -59,11 +60,14 @@ def open_options():
         # Save the state of the checkbox to config
         config['enable_word_deletion'] = checkbox_delete.isChecked()
         mw.addonManager.writeConfig(__name__, config)
-        dialog.close()
+        dialog.accept()
     
     
     btn_save.clicked.connect(save_selection)
-    layout.addWidget(btn_save)
+    btn_cancel.clicked.connect(dialog.reject)
+    save_cancel_layout.addWidget(btn_save)
+    save_cancel_layout.addWidget(btn_cancel)
+    layout.addLayout(save_cancel_layout)
     
     dialog.setLayout(layout)
     dialog.exec()
