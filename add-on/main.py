@@ -43,10 +43,15 @@ def open_options():
     layout.addWidget(combo_decks)
 
     # Create checkbox for enabling word deletion
-    checkbox_delete = QCheckBox("Enable Word Deletion")
+    checkbox_delete_words = QCheckBox("Enable Word Deletion")
     enable_word_deletion = config.get('enable_word_deletion', False)
-    checkbox_delete.setChecked(enable_word_deletion)
-    layout.addWidget(checkbox_delete)
+    checkbox_delete_words.setChecked(enable_word_deletion)
+    layout.addWidget(checkbox_delete_words)
+    
+    checkbox_delete_annotation = QCheckBox("Enable Annotation Deletion")
+    enable_annotation_deletion = config.get('enable_annotation_deletion', False)
+    checkbox_delete_annotation.setChecked(enable_annotation_deletion)
+    layout.addWidget(checkbox_delete_annotation)
     
     save_cancel_layout = QHBoxLayout()
     btn_save = QPushButton("Save")
@@ -58,7 +63,8 @@ def open_options():
         config['selected_deck_id'] = selected_id
 
         # Save the state of the checkbox to config
-        config['enable_word_deletion'] = checkbox_delete.isChecked()
+        config['enable_word_deletion'] = checkbox_delete_words.isChecked()
+        config['enable_annotation_deletion'] = checkbox_delete_annotation.isChecked()
         mw.addonManager.writeConfig(__name__, config)
         dialog.accept()
     
