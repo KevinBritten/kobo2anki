@@ -2,17 +2,20 @@
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo
-from .utils import extract_words_from_kobo, create_anki_cards, show_confirmation_dialog
+from .utils import extract_words_from_kobo, create_anki_cards, show_confirmation_dialog,extract_words_and_context
 
 def main_function():
     open_main_menu()
 
 def translate_words():
-    # Step 1: Extract words from Kobo
-    words = extract_words_from_kobo()
+    # # Step 1: Extract words from Kobo
+    
+    # words = extract_words_from_kobo()
 
-    # Step 2: Show confirmation dialog
-    show_confirmation_dialog(words)
+    # # Step 2: Show confirmation dialog
+    # show_confirmation_dialog(words)
+    
+    extract_words_and_context()
 
 # Your Anki menu action setup can go here
 

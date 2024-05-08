@@ -205,3 +205,31 @@ def show_confirmation_dialog(words):
     layout.addWidget(cancel_button)
 
     dialog.exec()
+
+def extract_words_and_context():
+    script_dir = os.path.dirname(__file__)
+    folder_path = os.path.join(script_dir, 'test-data', 'Digital Editions')
+    annotations = {}
+    # Define namespaces
+    namespaces = {'ns': 'http://ns.adobe.com/digitaleditions/annotations', 'dc': 'http://purl.org/dc/elements/1.1/'}
+
+    for filename in os.listdir(folder_path):
+        if filename.endswith(".annot"):
+            file_path = os.path.join(folder_path, filename)
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+
+            # Iterate over annotations
+            for parent_elem in root.findall(".//ns:annotation", namespaces):
+                identifier = parent_elem.find(".//dc:identifier", namespaces).text
+                # Find the text element under fragment
+                annotation_elem = parent_elem.find(".//ns:target/ns:fragment/ns:text", namespaces)
+                annotation_text = annotation_elem.text if annotation_elem is not None else None                
+                word_elem = parent_elem.find(".//ns:content/ns:text", namespaces)
+                word_text = word_elem.text if word_elem is not None else None                
+                # Add to annotations dictionary
+                if annotation_text is not None and word_text is not None:
+                    print(word_text)
+                    annotations[identifier] = {'annotation': annotation_text, 'word':word_text}
+           
+    return annotations
