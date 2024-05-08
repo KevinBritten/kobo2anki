@@ -229,7 +229,6 @@ def extract_words_and_context():
                 word_text = word_elem.text if word_elem is not None else None                
                 # Add to annotations dictionary
                 if annotation_text is not None and word_text is not None:
-                    print(word_text)
                     annotations[identifier] = {'annotation': annotation_text, 'word':word_text}
            
     return annotations
