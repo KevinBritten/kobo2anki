@@ -15,7 +15,8 @@ def translate_words():
     # # Step 2: Show confirmation dialog
     # show_confirmation_dialog(words)
     
-    extract_words_and_context()
+    annotations = extract_words_and_context()
+    print(annotations)
 
 # Your Anki menu action setup can go here
 
