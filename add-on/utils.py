@@ -221,31 +221,41 @@ def extract_words_and_context():
 
             # Iterate over annotations
             for parent_elem in root.findall(".//ns:annotation", namespaces):
-                identifier = parent_elem.find(".//dc:identifier", namespaces).text
-                # Find the text element under fragment
-                annotation_elem = parent_elem.find(".//ns:target/ns:fragment/ns:text", namespaces)
-                annotation_text = annotation_elem.text if annotation_elem is not None else None                
-                word_elem = parent_elem.find(".//ns:content/ns:text", namespaces)
-                word_elem_content = word_elem.text if word_elem is not None else None 
-                word_text = ""
-                print(word_elem_content)
-                if word_elem_content is not None:
-                    if word_elem_content.isdigit():
-                        # Case 1: word_elem_content is a single number
-                        words = annotation_text.split()
-                        index = int(word_elem_content) - 1
-                        if 0 <= index < len(words):
-                            word_text = words[index]
-                    elif '.' in word_elem_content and all(part.isdigit() for part in word_elem_content.split('.')):
-                        # Case 2: word_elem_content is of format "num1.num2"
-                        start_index, end_index = map(int, word_elem_content.split('.'))
-                        words = annotation_text.split()
-                        if 0 <= start_index-1 < len(words) and 0 < end_index <= len(words) and start_index <= end_index:
-                            word_text = ' '.join(words[start_index-1:end_index])
-                    else:
-                        # Case 3: word_elem_content is a string in any other format
-                        word_text = word_elem_content
-                if annotation_text is not None and word_text:
-                    annotations[identifier] = {'annotation': annotation_text, 'word':word_text}
+                checked_elem = parent_elem.find(".//checked")
+                if checked_elem is None:
+                    identifier = parent_elem.find(".//dc:identifier", namespaces).text
+                    # Find the text element under fragment
+                    annotation_elem = parent_elem.find(".//ns:target/ns:fragment/ns:text", namespaces)
+                    annotation_text = annotation_elem.text if annotation_elem is not None else None                
+                    word_elem = parent_elem.find(".//ns:content/ns:text", namespaces)
+                    word_elem_content = word_elem.text if word_elem is not None else None 
+                    word_text = ""
+                    print(word_elem_content)
+                    if word_elem_content is not None:
+                        if word_elem_content.isdigit():
+                            # Case 1: word_elem_content is a single number
+                            words = annotation_text.split()
+                            index = int(word_elem_content) - 1
+                            if 0 <= index < len(words):
+                                word_text = words[index]
+                        elif '.' in word_elem_content and all(part.isdigit() for part in word_elem_content.split('.')):
+                            # Case 2: word_elem_content is of format "num1.num2"
+                            start_index, end_index = map(int, word_elem_content.split('.'))
+                            words = annotation_text.split()
+                            if 0 <= start_index-1 < len(words) and 0 < end_index <= len(words) and start_index <= end_index:
+                                word_text = ' '.join(words[start_index-1:end_index])
+                        else:
+                            # Case 3: word_elem_content is a string in any other format
+                            word_text = word_elem_content
+                    if annotation_text is not None and word_text:
+                        annotations[identifier] = {'annotation': annotation_text, 'word':word_text}
+
+                    #Add checked element 
+                    checked_elem = ET.Element('checked')
+                    checked_elem.text = 'true'
+                    parent_elem.insert(0, checked_elem)
+
+            # Save the modified file
+            tree.write(file_path)
            
     return annotations
