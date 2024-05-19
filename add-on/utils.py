@@ -251,7 +251,7 @@ def extract_words_and_context():
                         annotations[identifier] = {'annotation': annotation_text, 'word':word_text}
 
                     #Add checked element 
-                    if (config.get("add_checked_element_to_annotations"),True) and checked_elem is None:
+                    if config.get("add_checked_element_to_annotations",True ) and checked_elem is None:
                         checked_elem = ET.Element('checked')
                         checked_elem.text = 'true'
                         parent_elem.insert(0, checked_elem)
