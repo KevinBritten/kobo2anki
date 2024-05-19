@@ -106,18 +106,46 @@ def match_annotations_and_words(words, annotations):
         pairs.append({'word': word, 'matching_annotation': matching_annotation})
     return pairs
 
-def create_anki_cards(pairs):
+# def create_anki_cards(pairs):
+#     # Load the deck ID from the configuration
+#     config = mw.addonManager.getConfig(__name__)
+#     deck_id = config.get('selected_deck_id')
+    
+#     successful_words = []    
+#     # Iterate through the words and create Anki cards
+#     for pair in pairs:
+#         word = pair['word']
+#         matching_annotation = pair['matching_annotation']
+#         definition = definition_func(word,matching_annotation)
+        
+#         modelID = None  # Initialize modelID to None
+#         models = mw.col.models.all()  # Retrieve all models in the collection
+#         for model in models:
+#             if model['name'] == "Basic":  # Check if the model name is "Basic"
+#                 modelID = model['id']  # Store the model ID in modelID
+#                 break  # Exit the loop once the desired model is found
+#         # Create a new note
+#         note = mw.col.new_note(modelID)  # Include the reference to the Anki collection
+#         # Set the word as the front of the card
+#         note["Back"] = word + ' - ' + definition
+#         note["Front"] = matching_annotation
+      
+#         if mw.col.add_note(note, deck_id):
+#             successful_words.append(word)
+#     if config.get("enable_word_deletion", False):
+#         delete_successful_words(successful_words)
+#     mw.reset()
+#     return successful_words.__len__()
+
+def create_anki_cards(annotations):
     # Load the deck ID from the configuration
     config = mw.addonManager.getConfig(__name__)
     deck_id = config.get('selected_deck_id')
-    
-    successful_words = []    
-    # Iterate through the words and create Anki cards
-    for pair in pairs:
-        word = pair['word']
-        matching_annotation = pair['matching_annotation']
-        definition = definition_func(word,matching_annotation)
-        
+    successful_words = []   
+    for annotation in annotations:
+        word = annotation['word']
+        annotation_text = annotation['annotation_text']
+        definition = definition_func(word,annotation_text)
         modelID = None  # Initialize modelID to None
         models = mw.col.models.all()  # Retrieve all models in the collection
         for model in models:
@@ -128,14 +156,12 @@ def create_anki_cards(pairs):
         note = mw.col.new_note(modelID)  # Include the reference to the Anki collection
         # Set the word as the front of the card
         note["Back"] = word + ' - ' + definition
-        note["Front"] = matching_annotation
-      
+        note["Front"] = annotation_text
         if mw.col.add_note(note, deck_id):
             successful_words.append(word)
-    if config.get("enable_word_deletion", False):
-        delete_successful_words(successful_words)
     mw.reset()
     return successful_words.__len__()
+
     
 def delete_successful_words(words):
     # Connect to the SQLite database
@@ -170,7 +196,43 @@ def parse_date(date_str):
 
 
 
-def show_confirmation_dialog(words):
+# def show_confirmation_dialog(words):
+#     dialog = QDialog(mw)
+#     dialog.setWindowTitle("Confirmation")
+#     dialog.setGeometry(100, 100, 300, 150)
+#     layout = QVBoxLayout(dialog)
+
+#     label = QLabel("Do you want to create Anki cards for the following words?")
+#     layout.addWidget(label)
+
+#     for word_tuple in words:
+#         word = word_tuple[0]
+#         label = QLabel(str(word))
+#         layout.addWidget(label)
+
+#     def on_confirm():
+#         # Call the function that creates the cards and get the number of cards added
+#         script_dir = os.path.dirname(__file__)
+#         folder_path = os.path.join(script_dir, 'test-data', 'Digital Editions')
+#         num_cards_added = create_anki_cards(match_annotations_and_words(words, get_annotations(folder_path)))
+        
+#         # Display a message box with the number of cards added
+#         QMessageBox.information(dialog, "Cards Added", f"{num_cards_added} cards added")
+        
+#         # Close the original dialog
+#         dialog.close()
+
+#     confirm_button = QPushButton("Confirm")
+#     confirm_button.clicked.connect(on_confirm)
+#     layout.addWidget(confirm_button)
+
+#     cancel_button = QPushButton("Cancel")
+#     cancel_button.clicked.connect(dialog.close)
+#     layout.addWidget(cancel_button)
+
+#     dialog.exec()
+
+def show_confirmation_dialog(annotations):
     dialog = QDialog(mw)
     dialog.setWindowTitle("Confirmation")
     dialog.setGeometry(100, 100, 300, 150)
@@ -179,16 +241,14 @@ def show_confirmation_dialog(words):
     label = QLabel("Do you want to create Anki cards for the following words?")
     layout.addWidget(label)
 
-    for word_tuple in words:
-        word = word_tuple[0]
+    for annotation in annotations:
+        word = annotation['word']
         label = QLabel(str(word))
         layout.addWidget(label)
 
     def on_confirm():
         # Call the function that creates the cards and get the number of cards added
-        script_dir = os.path.dirname(__file__)
-        folder_path = os.path.join(script_dir, 'test-data', 'Digital Editions')
-        num_cards_added = create_anki_cards(match_annotations_and_words(words, get_annotations(folder_path)))
+        num_cards_added = create_anki_cards(annotations)
         
         # Display a message box with the number of cards added
         QMessageBox.information(dialog, "Cards Added", f"{num_cards_added} cards added")
@@ -209,7 +269,7 @@ def show_confirmation_dialog(words):
 def extract_words_and_context():
     script_dir = os.path.dirname(__file__)
     folder_path = os.path.join(script_dir, 'test-data', 'Digital Editions')
-    annotations = {}
+    annotations = []
     # Define namespaces
     namespaces = {'ns': 'http://ns.adobe.com/digitaleditions/annotations', 'dc': 'http://purl.org/dc/elements/1.1/'}
 
@@ -223,7 +283,6 @@ def extract_words_and_context():
             for parent_elem in root.findall(".//ns:annotation", namespaces):
                 checked_elem = parent_elem.find(".//checked")
                 if checked_elem is None or (checked_elem is not None and not config.get("skip_annotations_with_checked_element", True)):
-                    identifier = parent_elem.find(".//dc:identifier", namespaces).text
                     # Find the text element under fragment
                     annotation_elem = parent_elem.find(".//ns:target/ns:fragment/ns:text", namespaces)
                     annotation_text = annotation_elem.text if annotation_elem is not None else None                
@@ -248,10 +307,10 @@ def extract_words_and_context():
                             # Case 3: word_elem_content is a string in any other format
                             word_text = word_elem_content
                     if annotation_text is not None and word_text:
-                        annotations[identifier] = {'annotation': annotation_text, 'word':word_text}
+                        annotations.append({'annotation_text': annotation_text, 'word': word_text})
 
-                    #Add checked element 
-                    if config.get("add_checked_element_to_annotations",True ) and checked_elem is None:
+                    # Add checked element 
+                    if config.get("add_checked_element_to_annotations", True) and checked_elem is None:
                         checked_elem = ET.Element('checked')
                         checked_elem.text = 'true'
                         parent_elem.insert(0, checked_elem)
