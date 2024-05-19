@@ -222,7 +222,7 @@ def extract_words_and_context():
             # Iterate over annotations
             for parent_elem in root.findall(".//ns:annotation", namespaces):
                 checked_elem = parent_elem.find(".//checked")
-                if checked_elem is None:
+                if checked_elem is None or (checked_elem is not None and not config.get("skip_annotations_with_checked_element", True)):
                     identifier = parent_elem.find(".//dc:identifier", namespaces).text
                     # Find the text element under fragment
                     annotation_elem = parent_elem.find(".//ns:target/ns:fragment/ns:text", namespaces)
@@ -251,9 +251,10 @@ def extract_words_and_context():
                         annotations[identifier] = {'annotation': annotation_text, 'word':word_text}
 
                     #Add checked element 
-                    checked_elem = ET.Element('checked')
-                    checked_elem.text = 'true'
-                    parent_elem.insert(0, checked_elem)
+                    if (config.get("add_checked_element_to_annotations"),True) and checked_elem is None:
+                        checked_elem = ET.Element('checked')
+                        checked_elem.text = 'true'
+                        parent_elem.insert(0, checked_elem)
 
             # Save the modified file
             tree.write(file_path)
