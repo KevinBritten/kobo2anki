@@ -141,10 +141,11 @@ def create_anki_cards(annotations):
     # Load the deck ID from the configuration
     config = mw.addonManager.getConfig(__name__)
     deck_id = config.get('selected_deck_id')
-    successful_words = []   
+    successful_identifiers = []
     for annotation in annotations:
         word = annotation['word']
         annotation_text = annotation['annotation_text']
+        identifier = annotation['identifier']
         definition = definition_func(word,annotation_text)
         modelID = None  # Initialize modelID to None
         models = mw.col.models.all()  # Retrieve all models in the collection
@@ -158,9 +159,35 @@ def create_anki_cards(annotations):
         note["Back"] = word + ' - ' + definition
         note["Front"] = annotation_text
         if mw.col.add_note(note, deck_id):
-            successful_words.append(word)
+             successful_identifiers.append(identifier)
     mw.reset()
-    return successful_words.__len__()
+    return successful_identifiers
+
+def add_checked_elements(successful_identifiers):
+    script_dir = os.path.dirname(__file__)
+    folder_path = os.path.join(script_dir, 'test-data', 'Digital Editions')
+    # Define namespaces
+    namespaces = {'ns': 'http://ns.adobe.com/digitaleditions/annotations', 'dc': 'http://purl.org/dc/elements/1.1/'}
+
+    for filename in os.listdir(folder_path):
+        if filename.endswith(".annot"):
+            file_path = os.path.join(folder_path, filename)
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+
+            # Iterate over annotations
+            for parent_elem in root.findall(".//ns:annotation", namespaces):
+                identifier_elem = parent_elem.find('.//dc:identifier', namespaces)
+                if identifier_elem is not None and identifier_elem.text in successful_identifiers:
+                    checked_elem = parent_elem.find(".//checked")
+                    if checked_elem is None:
+                        checked_elem = ET.Element('checked')
+                        checked_elem.text = 'true'
+                        parent_elem.insert(0, checked_elem)
+
+            # Save the modified file
+            tree.write(file_path)
+
 
     
 def delete_successful_words(words):
@@ -248,10 +275,12 @@ def show_confirmation_dialog(annotations):
 
     def on_confirm():
         # Call the function that creates the cards and get the number of cards added
-        num_cards_added = create_anki_cards(annotations)
         
+        successful_identifiers = create_anki_cards(annotations)
+        if config.get("add_checked_element_to_annotations", True):
+            add_checked_elements(successful_identifiers)
         # Display a message box with the number of cards added
-        QMessageBox.information(dialog, "Cards Added", f"{num_cards_added} cards added")
+        QMessageBox.information(dialog, "Cards Added", f"{len(successful_identifiers)} cards added")
         
         # Close the original dialog
         dialog.close()
@@ -288,6 +317,7 @@ def extract_words_and_context():
                     annotation_text = annotation_elem.text if annotation_elem is not None else None                
                     word_elem = parent_elem.find(".//ns:content/ns:text", namespaces)
                     word_elem_content = word_elem.text if word_elem is not None else None 
+                    identifier = parent_elem.find('.//dc:identifier', namespaces).text
                     word_text = ""
                     print(word_elem_content)
                     if word_elem_content is not None:
@@ -307,15 +337,6 @@ def extract_words_and_context():
                             # Case 3: word_elem_content is a string in any other format
                             word_text = word_elem_content
                     if annotation_text is not None and word_text:
-                        annotations.append({'annotation_text': annotation_text, 'word': word_text})
-
-                    # Add checked element 
-                    if config.get("add_checked_element_to_annotations", True) and checked_elem is None:
-                        checked_elem = ET.Element('checked')
-                        checked_elem.text = 'true'
-                        parent_elem.insert(0, checked_elem)
-
-            # Save the modified file
-            tree.write(file_path)
+                        annotations.append({'annotation_text': annotation_text, 'word': word_text, 'identifier':identifier})
            
     return annotations
