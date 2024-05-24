@@ -53,17 +53,15 @@ def define_with_open_ai(word, context):
     definition = response.choices[0].message.content
     return definition
 
-
-api_mode = config.get("api_mode", "deepl")  # Default to "deepl" if not specified
-
-api_mode = "deepl"
-
-if api_mode == "openai":
-    definition_func = define_with_open_ai
-elif api_mode == "deepl":
-    definition_func = define_with_deepl
-else:
-    raise ValueError("Invalid api_mode in config")
+def get_definition_func():
+    api_mode = config.get("api_mode", "deepl")  # Default to "deepl" if not specified
+    if api_mode == "openai":
+        definition_func = define_with_open_ai
+    elif api_mode == "deepl":
+        definition_func = define_with_deepl
+    else:
+        raise ValueError("Invalid api_mode in config")
+    return definition_func
 
 def extract_words_from_kobo():
     script_dir = os.path.dirname(__file__)
@@ -115,6 +113,7 @@ def match_annotations_and_words(words, annotations):
 
 def create_anki_cards(annotations):
     # Load the deck ID from the configuration
+    definition_func = get_definition_func()
     deck_id = config.get('selected_deck_id')
     successful_identifiers = []
     for annotation in annotations:
@@ -194,45 +193,6 @@ def parse_date(date_str):
     date_str_no_z = date_str[:-1]
     date = datetime.fromisoformat(date_str_no_z)
     return date
-
-
-
-
-# def show_confirmation_dialog(words):
-#     dialog = QDialog(mw)
-#     dialog.setWindowTitle("Confirmation")
-#     dialog.setGeometry(100, 100, 300, 150)
-#     layout = QVBoxLayout(dialog)
-
-#     label = QLabel("Do you want to create Anki cards for the following words?")
-#     layout.addWidget(label)
-
-#     for word_tuple in words:
-#         word = word_tuple[0]
-#         label = QLabel(str(word))
-#         layout.addWidget(label)
-
-#     def on_confirm():
-#         # Call the function that creates the cards and get the number of cards added
-#         script_dir = os.path.dirname(__file__)
-#         folder_path = os.path.join(script_dir, 'test-data', 'Digital Editions')
-#         num_cards_added = create_anki_cards(match_annotations_and_words(words, get_annotations(folder_path)))
-        
-#         # Display a message box with the number of cards added
-#         QMessageBox.information(dialog, "Cards Added", f"{num_cards_added} cards added")
-        
-#         # Close the original dialog
-#         dialog.close()
-
-#     confirm_button = QPushButton("Confirm")
-#     confirm_button.clicked.connect(on_confirm)
-#     layout.addWidget(confirm_button)
-
-#     cancel_button = QPushButton("Cancel")
-#     cancel_button.clicked.connect(dialog.close)
-#     layout.addWidget(cancel_button)
-
-#     dialog.exec()
 
 def show_confirmation_dialog(annotations):
     dialog = QDialog(mw)
