@@ -167,6 +167,7 @@ def extract_words_and_context():
             #Load config settings
             skip_annotations_with_checked_element = config.get("skip_annotations_with_checked_element", True)
             add_empty_annotations = config.get("add_empty_annotations", False)
+            add_single_word_empty_annotations_only = config.get("add_single_word_empty_annotations_only", True)
             # Iterate over annotations
             for parent_elem in root.findall(".//ns:annotation", namespaces):
                 checked_elem = parent_elem.find(".//checked")
@@ -180,6 +181,10 @@ def extract_words_and_context():
                     word_text = ""
                     if word_elem_content is not None or add_empty_annotations:
                         if word_elem_content is None:
+                            #check for whitespace in annotation_text
+                            contains_whitespace = any(char.isspace() for char in annotation_text)
+                            if add_single_word_empty_annotations_only and contains_whitespace:
+                                continue
                             word_text = annotation_text
                             annotation_text = ""
                         elif word_elem_content.isdigit():
