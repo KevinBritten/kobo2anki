@@ -115,7 +115,7 @@ def add_checked_elements(successful_identifiers):
             tree.write(file_path)
 
 
-def show_confirmation_dialog(annotations):
+def show_confirmation_dialog(annotations,main_menu_dialog):
     dialog = QDialog(mw)
     dialog.setWindowTitle("Confirmation")
     dialog.setGeometry(100, 100, 300, 150)
@@ -139,6 +139,7 @@ def show_confirmation_dialog(annotations):
         
         # Close the original dialog
         dialog.close()
+        main_menu_dialog.accept()
 
     confirm_button = QPushButton("Confirm")
     confirm_button.clicked.connect(on_confirm)

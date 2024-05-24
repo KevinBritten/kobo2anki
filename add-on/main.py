@@ -4,14 +4,16 @@ from aqt.qt import *
 from aqt.utils import showInfo
 from .utils import update_config, show_confirmation_dialog,extract_words_and_context
 
+main_menu_dialog = None
+
 def main_function():
     open_main_menu()
 
 def translate_words():
     annotations = extract_words_and_context()
     print(annotations)
-    show_confirmation_dialog(annotations)
-    
+    show_confirmation_dialog(annotations,main_menu_dialog)
+
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo
@@ -75,9 +77,10 @@ def open_options():
     dialog.exec()
 
 def open_main_menu():
+    global main_menu_dialog
     # Create a QDialog
-    dialog = QDialog(mw)
-    dialog.setWindowTitle("Main Menu")
+    main_menu_dialog = QDialog(mw)
+    main_menu_dialog.setWindowTitle("Main Menu")
     
     # Layout for buttons
     layout = QVBoxLayout()
@@ -93,7 +96,7 @@ def open_main_menu():
     layout.addWidget(btn_options)
     
     # Set layout on QDialog
-    dialog.setLayout(layout)
+    main_menu_dialog.setLayout(layout)
     
     # Show the dialog
-    dialog.exec()
+    main_menu_dialog.exec()
