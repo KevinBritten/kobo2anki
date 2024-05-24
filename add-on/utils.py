@@ -186,7 +186,6 @@ def extract_words_and_context():
                             if add_single_word_empty_annotations_only and contains_whitespace:
                                 continue
                             word_text = annotation_text
-                            annotation_text = ""
                         elif word_elem_content.isdigit():
                             # Case 1: word_elem_content is a single number
                             words = annotation_text.split()
