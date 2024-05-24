@@ -1,8 +1,6 @@
 {
   "openai_api_key": "",
   "deepl_api_key": "",
-  "enable_annotation_deletion": false,
-  "enable_word_deletion": false,
   "skip_annotations_with_checked_element":true,
   "add_checked_element_to_annotations": true,
   "api_mode": "deepl"

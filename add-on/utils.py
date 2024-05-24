@@ -63,54 +63,6 @@ def get_definition_func():
         raise ValueError("Invalid api_mode in config")
     return definition_func
 
-def extract_words_from_kobo():
-    script_dir = os.path.dirname(__file__)
-    db_path = os.path.join(script_dir, 'test-data', 'KoboReader.sqlite')
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    query = "SELECT Text, DateCreated FROM WordList"
-    cursor.execute(query)
-    words = cursor.fetchall()
-    conn.close()
-    return words
-
-def get_annotations(folder_path):
-    annotations = {}
-    # Define namespaces
-    namespaces = {'ns': 'http://ns.adobe.com/digitaleditions/annotations', 'dc': 'http://purl.org/dc/elements/1.1/'}
-
-    for filename in os.listdir(folder_path):
-        if filename.endswith(".annot"):
-            file_path = os.path.join(folder_path, filename)
-            tree = ET.parse(file_path)
-            root = tree.getroot()
-
-            # Iterate over annotations
-            for annotation_elem in root.findall(".//ns:annotation", namespaces):
-                identifier = annotation_elem.find(".//dc:identifier", namespaces).text
-                date_str = annotation_elem.find(".//dc:date", namespaces).text
-                date = parse_date(date_str)
-                # Find the text element under fragment
-                text_elem = annotation_elem.find(".//ns:target/ns:fragment/ns:text", namespaces)
-                text = text_elem.text if text_elem is not None else None                
-                # Add to annotations dictionary
-                annotations[identifier] = {'text': text, 'timestamp': date}
-
-    return annotations
-
-def match_annotations_and_words(words, annotations):
-    pairs = []
-    for word, DateCreated in words:
-        matching_annotation = ""
-        date = parse_date(DateCreated)
-        for annotation in annotations.values():
-            if annotation['timestamp'] > date:
-                if word in annotation['text']:
-                    matching_annotation = annotation['text']
-                break  # Stop searching after finding the first matching annotation
-        pairs.append({'word': word, 'matching_annotation': matching_annotation})
-    return pairs
-
 def create_anki_cards(annotations):
     # Load the deck ID from the configuration
     definition_func = get_definition_func()
@@ -162,37 +114,6 @@ def add_checked_elements(successful_identifiers):
             # Save the modified file
             tree.write(file_path)
 
-
-    
-def delete_successful_words(words):
-    # Connect to the SQLite database
-    script_dir = os.path.dirname(__file__)
-    db_path = os.path.join(script_dir, 'test-data', 'KoboReader.sqlite')
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-
-    try:
-        # Prepare the SQL delete query
-        # Use parameter substitution to safely insert the words into the query
-        query = "DELETE FROM WordList WHERE Text IN ({})".format(','.join('?' * len(words)))
-        
-        # Execute the query with the list of words
-        cursor.execute(query, words)
-        
-        # Commit the changes
-        conn.commit()
-    except sqlite3.Error as e:
-        print(f"An error occurred: {e}")
-    finally:
-        # Close the connection
-        conn.close()
-
-
-def parse_date(date_str):
-
-    date_str_no_z = date_str[:-1]
-    date = datetime.fromisoformat(date_str_no_z)
-    return date
 
 def show_confirmation_dialog(annotations):
     dialog = QDialog(mw)

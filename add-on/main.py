@@ -47,17 +47,6 @@ def open_options():
     
     layout.addWidget(combo_decks)
 
-    # Create checkbox for enabling word deletion
-    checkbox_delete_words = QCheckBox("Enable Word Deletion")
-    enable_word_deletion = config.get('enable_word_deletion', False)
-    checkbox_delete_words.setChecked(enable_word_deletion)
-    layout.addWidget(checkbox_delete_words)
-    
-    checkbox_delete_annotation = QCheckBox("Enable Annotation Deletion")
-    enable_annotation_deletion = config.get('enable_annotation_deletion', False)
-    checkbox_delete_annotation.setChecked(enable_annotation_deletion)
-    layout.addWidget(checkbox_delete_annotation)
-
     checkbox_skip_annotations_with_checked_element = QCheckBox("Enable skip_annotations_with_checked_element")
     enable_skip_annotations_with_checked_element = config.get('skip_annotations_with_checked_element', True)
     checkbox_skip_annotations_with_checked_element.setChecked(enable_skip_annotations_with_checked_element)
@@ -78,8 +67,6 @@ def open_options():
         config['selected_deck_id'] = selected_id
 
         # Save the state of the checkbox to config
-        config['enable_word_deletion'] = checkbox_delete_words.isChecked()
-        config['enable_annotation_deletion'] = checkbox_delete_annotation.isChecked()
         config['skip_annotations_with_checked_element'] = checkbox_skip_annotations_with_checked_element.isChecked()
         config['add_checked_element_to_annotations'] = checkbox_add_checked_element_to_annotations.isChecked()
         mw.addonManager.writeConfig(__name__, config)
