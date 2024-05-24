@@ -2,7 +2,7 @@
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo
-from .utils import extract_words_from_kobo, create_anki_cards, show_confirmation_dialog,extract_words_and_context
+from .utils import update_config, show_confirmation_dialog,extract_words_and_context
 
 def main_function():
     open_main_menu()
@@ -83,6 +83,7 @@ def open_options():
         config['skip_annotations_with_checked_element'] = checkbox_skip_annotations_with_checked_element.isChecked()
         config['add_checked_element_to_annotations'] = checkbox_add_checked_element_to_annotations.isChecked()
         mw.addonManager.writeConfig(__name__, config)
+        update_config()
         dialog.accept()
     
     

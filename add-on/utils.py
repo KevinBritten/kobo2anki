@@ -13,10 +13,14 @@ lib_path = os.path.join(os.path.dirname(__file__), 'lib')
 sys.path.insert(0, lib_path)
 config = mw.addonManager.getConfig(__name__)
 
+def update_config():
+    global config
+    config = mw.addonManager.getConfig(__name__)
+
+
 
 def define_with_deepl(word, context):
     import deepl
-
     api_key = config.get("deepl_api_key", "")
     translator = deepl.Translator(api_key)
     source_lang = "FR"  # French
@@ -49,7 +53,10 @@ def define_with_open_ai(word, context):
     definition = response.choices[0].message.content
     return definition
 
+
 api_mode = config.get("api_mode", "deepl")  # Default to "deepl" if not specified
+
+api_mode = "deepl"
 
 if api_mode == "openai":
     definition_func = define_with_open_ai
@@ -106,40 +113,8 @@ def match_annotations_and_words(words, annotations):
         pairs.append({'word': word, 'matching_annotation': matching_annotation})
     return pairs
 
-# def create_anki_cards(pairs):
-#     # Load the deck ID from the configuration
-#     config = mw.addonManager.getConfig(__name__)
-#     deck_id = config.get('selected_deck_id')
-    
-#     successful_words = []    
-#     # Iterate through the words and create Anki cards
-#     for pair in pairs:
-#         word = pair['word']
-#         matching_annotation = pair['matching_annotation']
-#         definition = definition_func(word,matching_annotation)
-        
-#         modelID = None  # Initialize modelID to None
-#         models = mw.col.models.all()  # Retrieve all models in the collection
-#         for model in models:
-#             if model['name'] == "Basic":  # Check if the model name is "Basic"
-#                 modelID = model['id']  # Store the model ID in modelID
-#                 break  # Exit the loop once the desired model is found
-#         # Create a new note
-#         note = mw.col.new_note(modelID)  # Include the reference to the Anki collection
-#         # Set the word as the front of the card
-#         note["Back"] = word + ' - ' + definition
-#         note["Front"] = matching_annotation
-      
-#         if mw.col.add_note(note, deck_id):
-#             successful_words.append(word)
-#     if config.get("enable_word_deletion", False):
-#         delete_successful_words(successful_words)
-#     mw.reset()
-#     return successful_words.__len__()
-
 def create_anki_cards(annotations):
     # Load the deck ID from the configuration
-    config = mw.addonManager.getConfig(__name__)
     deck_id = config.get('selected_deck_id')
     successful_identifiers = []
     for annotation in annotations:
@@ -275,7 +250,6 @@ def show_confirmation_dialog(annotations):
 
     def on_confirm():
         # Call the function that creates the cards and get the number of cards added
-        
         successful_identifiers = create_anki_cards(annotations)
         if config.get("add_checked_element_to_annotations", True):
             add_checked_elements(successful_identifiers)
@@ -319,7 +293,6 @@ def extract_words_and_context():
                     word_elem_content = word_elem.text if word_elem is not None else None 
                     identifier = parent_elem.find('.//dc:identifier', namespaces).text
                     word_text = ""
-                    print(word_elem_content)
                     if word_elem_content is not None:
                         if word_elem_content.isdigit():
                             # Case 1: word_elem_content is a single number
