@@ -49,6 +49,11 @@ def open_options():
     enable_add_checked_element_to_annotations = config.get('add_checked_element_to_annotations', True)
     checkbox_add_checked_element_to_annotations.setChecked(enable_add_checked_element_to_annotations)
     layout.addWidget(checkbox_add_checked_element_to_annotations)
+
+    checkbox_add_empty_annotations = QCheckBox("Enable add_empty_annotations")
+    enable_add_empty_annotations = config.get('add_empty_annotations', True)
+    checkbox_add_empty_annotations.setChecked(enable_add_empty_annotations)
+    layout.addWidget(checkbox_add_empty_annotations)
     
     save_cancel_layout = QHBoxLayout()
     btn_save = QPushButton("Save")
@@ -62,6 +67,7 @@ def open_options():
         # Save the state of the checkbox to config
         config['skip_annotations_with_checked_element'] = checkbox_skip_annotations_with_checked_element.isChecked()
         config['add_checked_element_to_annotations'] = checkbox_add_checked_element_to_annotations.isChecked()
+        config['add_empty_annotations'] = checkbox_add_empty_annotations.isChecked()
         mw.addonManager.writeConfig(__name__, config)
         update_config()
         dialog.accept()

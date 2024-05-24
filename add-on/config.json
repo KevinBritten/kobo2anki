@@ -3,5 +3,6 @@
   "deepl_api_key": "",
   "skip_annotations_with_checked_element":true,
   "add_checked_element_to_annotations": true,
+  "add_empty_annotations": false,
   "api_mode": "deepl"
 }

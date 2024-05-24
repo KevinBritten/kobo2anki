@@ -164,10 +164,13 @@ def extract_words_and_context():
             tree = ET.parse(file_path)
             root = tree.getroot()
 
+            #Load config settings
+            skip_annotations_with_checked_element = config.get("skip_annotations_with_checked_element", True)
+            add_empty_annotations = config.get("add_empty_annotations", False)
             # Iterate over annotations
             for parent_elem in root.findall(".//ns:annotation", namespaces):
                 checked_elem = parent_elem.find(".//checked")
-                if checked_elem is None or (checked_elem is not None and not config.get("skip_annotations_with_checked_element", True)):
+                if checked_elem is None or (checked_elem is not None and not skip_annotations_with_checked_element):
                     # Find the text element under fragment
                     annotation_elem = parent_elem.find(".//ns:target/ns:fragment/ns:text", namespaces)
                     annotation_text = annotation_elem.text if annotation_elem is not None else None                
@@ -175,8 +178,11 @@ def extract_words_and_context():
                     word_elem_content = word_elem.text if word_elem is not None else None 
                     identifier = parent_elem.find('.//dc:identifier', namespaces).text
                     word_text = ""
-                    if word_elem_content is not None:
-                        if word_elem_content.isdigit():
+                    if word_elem_content is not None or add_empty_annotations:
+                        if word_elem_content is None:
+                            word_text = annotation_text
+                            annotation_text = ""
+                        elif word_elem_content.isdigit():
                             # Case 1: word_elem_content is a single number
                             words = annotation_text.split()
                             index = int(word_elem_content) - 1
