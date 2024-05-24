@@ -8,19 +8,10 @@ def main_function():
     open_main_menu()
 
 def translate_words():
-    # # Step 1: Extract words from Kobo
-    
-    # words = extract_words_from_kobo()
-
-    # # Step 2: Show confirmation dialog
-    # show_confirmation_dialog(words)
-    
     annotations = extract_words_and_context()
     print(annotations)
     show_confirmation_dialog(annotations)
-
-# Your Anki menu action setup can go here
-
+    
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo
