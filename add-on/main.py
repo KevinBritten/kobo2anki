@@ -12,7 +12,12 @@ def main_function():
 def translate_words():
     annotations = extract_words_and_context()
     print(annotations)
-    show_confirmation_dialog(annotations,main_menu_dialog)
+    if annotations:
+        show_confirmation_dialog(annotations, main_menu_dialog)
+    elif annotations is not None:
+        QMessageBox.warning(None, "No Annotations Found", "No annotations were found.")
+
+
 
 from aqt import mw
 from aqt.qt import *

@@ -151,7 +151,10 @@ def show_confirmation_dialog(annotations,main_menu_dialog):
     dialog.exec()
 
 def extract_words_and_context():
-    folder_path = config.get('annotation-directory', '')
+    folder_path = get_annotation_folder()
+    if not folder_path:
+            return
+
     annotations = []
     # Define namespaces
     namespaces = {'ns': 'http://ns.adobe.com/digitaleditions/annotations', 'dc': 'http://purl.org/dc/elements/1.1/'}
@@ -203,3 +206,21 @@ def extract_words_and_context():
                         annotations.append({'annotation_text': annotation_text, 'word': word_text, 'identifier':identifier})
            
     return annotations
+
+def get_annotation_folder():
+    folder_path = config.get('annotation-directory', '')
+
+    if not folder_path:
+        QMessageBox.warning(None, "No Directory Selected", "Please select a directory for annotations.")
+        return None
+
+    if not os.path.isdir(folder_path):
+        QMessageBox.warning(None, "Invalid Directory", "The selected directory is invalid.")
+        return None
+
+    annotation_files = [f for f in os.listdir(folder_path) if f.endswith(".annot")]
+    if not annotation_files:
+        QMessageBox.warning(None, "No Annotation Files", "The selected directory does not contain any annotation files.")
+        return None
+
+    return folder_path
