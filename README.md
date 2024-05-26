@@ -33,6 +33,8 @@ KOBO2ANKI is an addon for Anki that allows you to take highlighted passages from
   - Creates cards based on highlighted passages with no associated note.
 - **`add_single_word_empty_annotations_only`** (boolean, default: `true`)
   - If `add_empty_annotations` is set to `true`, highlighted passages with no associated note will only be added if they contain a single word.
+- **`annotation-directory`** (string, default:`""`)
+  - Directory containing .annot files.
 - **`api_mode`** (string, `"deepl"` or `"openai"`, default: `"openai"`)
   - Choose which API to use for translations.
 - **`deepl_api_key`** (string)
