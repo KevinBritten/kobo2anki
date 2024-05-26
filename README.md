@@ -49,7 +49,6 @@ KOBO2ANKI is an addon for Anki that allows you to take highlighted passages from
 ## Planned Features
 
 - Select location of Kobo annotation files.
-- Manually set the original language of the passage as well as the language to translate to.
 - Server mode to allow a small amount of translations without an API key.
 - Support for multiple books.
 - Selection and handling of individual highlighted passages instead of only bulk add.
