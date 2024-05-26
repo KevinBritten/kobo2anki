@@ -52,6 +52,21 @@ def open_options():
     target_lang_entry.setText(config.get('target_lang', 'EN-GB'))
     layout.addWidget(target_lang_label)
     layout.addWidget(target_lang_entry)
+    
+    dir_label = QLabel("Select Directory")
+    dir_entry = QLineEdit()
+    dir_entry.setText(config.get('annotation-directory', ''))
+    layout.addWidget(dir_label)
+    layout.addWidget(dir_entry)
+
+    def choose_directory():
+        dir_path = QFileDialog.getExistingDirectory(dialog, "Select Directory")
+        if dir_path:
+            dir_entry.setText(dir_path)
+    
+    btn_choose_dir = QPushButton("Choose Directory")
+    btn_choose_dir.clicked.connect(choose_directory)
+    layout.addWidget(btn_choose_dir)
 
     checkbox_skip_annotations_with_checked_element = QCheckBox("Enable skip_annotations_with_checked_element")
     enable_skip_annotations_with_checked_element = config.get('skip_annotations_with_checked_element', True)
@@ -81,6 +96,8 @@ def open_options():
         selected_index = combo_decks.currentIndex()
         selected_id = combo_decks.itemData(selected_index)
         config['selected_deck_id'] = selected_id
+        
+        config['annotation-directory'] = dir_entry.text()
         
         config['source_lang'] = source_lang_entry.text()
         config['target_lang'] = target_lang_entry.text()

@@ -7,5 +7,6 @@
   "add_single_word_empty_annotations_only": true,
   "api_mode": "deepl",
   "source_lang" : "FR",
-  "target_lang" : "EN-GB"
+  "target_lang" : "EN-GB",
+  "annotation-directory": ""
 }

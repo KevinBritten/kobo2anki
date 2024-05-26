@@ -90,8 +90,7 @@ def create_anki_cards(annotations):
     return successful_identifiers
 
 def add_checked_elements(successful_identifiers):
-    script_dir = os.path.dirname(__file__)
-    folder_path = os.path.join(script_dir, 'test-data', 'Digital Editions')
+    folder_path = config.get('annotation-directory', '')
     # Define namespaces
     namespaces = {'ns': 'http://ns.adobe.com/digitaleditions/annotations', 'dc': 'http://purl.org/dc/elements/1.1/'}
 
@@ -152,8 +151,7 @@ def show_confirmation_dialog(annotations,main_menu_dialog):
     dialog.exec()
 
 def extract_words_and_context():
-    script_dir = os.path.dirname(__file__)
-    folder_path = os.path.join(script_dir, 'test-data', 'Digital Editions')
+    folder_path = config.get('annotation-directory', '')
     annotations = []
     # Define namespaces
     namespaces = {'ns': 'http://ns.adobe.com/digitaleditions/annotations', 'dc': 'http://purl.org/dc/elements/1.1/'}
