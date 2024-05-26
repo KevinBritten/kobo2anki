@@ -5,5 +5,7 @@
   "add_checked_element_to_annotations": true,
   "add_empty_annotations": false,
   "add_single_word_empty_annotations_only": true,
-  "api_mode": "deepl"
+  "api_mode": "deepl",
+  "source_lang" : "FR",
+  "target_lang" : "EN-GB"
 }

@@ -23,8 +23,8 @@ def define_with_deepl(word, context):
     import deepl
     api_key = config.get("deepl_api_key", "")
     translator = deepl.Translator(api_key)
-    source_lang = "FR"  # French
-    target_lang = "EN-GB"  # English
+    source_lang = config.get("source_lang", "FR")
+    target_lang = config.get("target_lang", "EN-GB")
     
     try:
         translation = translator.translate_text(word, context=context, source_lang=source_lang, target_lang=target_lang, glossary=None) 

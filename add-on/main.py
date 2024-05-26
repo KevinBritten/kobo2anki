@@ -25,6 +25,7 @@ def open_options():
     layout = QVBoxLayout(dialog)
     
     # Create a combo box to list decks
+    combo_decks_label = QLabel("Select a deck")
     combo_decks = QComboBox()
     decks = mw.col.decks.all_names_and_ids()
     for deck in decks:
@@ -37,8 +38,20 @@ def open_options():
         index = combo_decks.findData(selected_deck_id)
         if index >= 0:
             combo_decks.setCurrentIndex(index)
-    
+    layout.addWidget(combo_decks_label)
     layout.addWidget(combo_decks)
+       
+    source_lang_label = QLabel("Source Language")
+    source_lang_entry = QLineEdit()
+    source_lang_entry.setText(config.get('source_lang', 'FR'))
+    layout.addWidget(source_lang_label)
+    layout.addWidget(source_lang_entry)
+    
+    target_lang_label = QLabel("Target Language")
+    target_lang_entry = QLineEdit()
+    target_lang_entry.setText(config.get('target_lang', 'EN-GB'))
+    layout.addWidget(target_lang_label)
+    layout.addWidget(target_lang_entry)
 
     checkbox_skip_annotations_with_checked_element = QCheckBox("Enable skip_annotations_with_checked_element")
     enable_skip_annotations_with_checked_element = config.get('skip_annotations_with_checked_element', True)
@@ -68,6 +81,9 @@ def open_options():
         selected_index = combo_decks.currentIndex()
         selected_id = combo_decks.itemData(selected_index)
         config['selected_deck_id'] = selected_id
+        
+        config['source_lang'] = source_lang_entry.text()
+        config['target_lang'] = target_lang_entry.text()
 
         # Save the state of the checkbox to config
         config['skip_annotations_with_checked_element'] = checkbox_skip_annotations_with_checked_element.isChecked()
