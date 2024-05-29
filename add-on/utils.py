@@ -124,7 +124,7 @@ def show_confirmation_dialog(annotations,main_menu_dialog):
 
     dialog.exec()
 
-def extract_words_and_context():
+def extract_words_and_context(selected_books):
     folder_path = get_annotation_folder()
     if not folder_path:
             return
@@ -138,6 +138,14 @@ def extract_words_and_context():
             file_path = os.path.join(folder_path, filename)
             tree = ET.parse(file_path)
             root = tree.getroot()
+            
+            if (selected_books is not True):
+                book_title_element = root.find(".//ns:publication/dc:title", namespaces)
+                book_title = None
+                if book_title_element is not None:
+                    book_title = book_title_element.text
+                if ((book_title is None) or  book_title not in selected_books):
+                    continue
 
             #Load config settings
             skip_annotations_with_existing_card = config.get("skip_annotations_with_existing_card", True)

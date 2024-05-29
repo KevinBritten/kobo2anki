@@ -4,13 +4,19 @@ from aqt.qt import *
 from aqt.utils import showInfo
 from .utils import update_config, show_confirmation_dialog,extract_words_and_context
 
+import os
+import xml.etree.ElementTree as ET
+
 main_menu_dialog = None
 
+selected_books = True
+
 def main_function():
+    global selected_books
     open_main_menu()
 
 def translate_words():
-    annotations = extract_words_and_context()
+    annotations = extract_words_and_context(selected_books)
     if annotations:
         show_confirmation_dialog(annotations, main_menu_dialog)
     elif annotations is not None:
@@ -118,6 +124,50 @@ def open_options():
     
     dialog.setLayout(layout)
     dialog.exec()
+    
+def open_select_books():
+    config = mw.addonManager.getConfig(__name__)
+    folder_path = config.get('annotation-directory', '')
+    namespaces = {'ns': 'http://ns.adobe.com/digitaleditions/annotations', 'dc': 'http://purl.org/dc/elements/1.1/'}
+    books = []
+
+    for filename in os.listdir(folder_path):
+        if filename.endswith(".annot"):
+            file_path = os.path.join(folder_path, filename)
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            book_title_element = root.find(".//ns:publication/dc:title", namespaces)
+            if book_title_element is not None:
+                book_title = book_title_element.text
+                books.append(book_title)
+
+    # Create a new window with checkboxes for each book title
+    dialog = QDialog(mw)
+    dialog.setWindowTitle("Select Books")
+    layout = QVBoxLayout()
+    global selected_books
+    
+    checkboxes = []
+    for book in books:
+        checkbox = QCheckBox(book)
+        if ((selected_books is True) or book in selected_books) :
+            checkbox.setChecked(True)  # Set checkbox to be checked by default
+        layout.addWidget(checkbox)
+        checkboxes.append(checkbox)
+    
+    # Add OK and Cancel buttons
+    button_box = QHBoxLayout()
+    btn_ok = QPushButton("OK")
+    btn_cancel = QPushButton("Cancel")
+    btn_ok.clicked.connect(dialog.accept)
+    btn_cancel.clicked.connect(dialog.reject)
+    button_box.addWidget(btn_ok)
+    button_box.addWidget(btn_cancel)
+    layout.addLayout(button_box)
+
+    dialog.setLayout(layout)
+    if dialog.exec():
+        selected_books = [checkbox.text() for checkbox in checkboxes if checkbox.isChecked()]
 
 def open_main_menu():
     global main_menu_dialog
@@ -132,6 +182,11 @@ def open_main_menu():
     btn_translate = QPushButton("Translate Words")
     btn_translate.clicked.connect(translate_words)  # Connect button to function
     layout.addWidget(btn_translate)
+    
+     # Button for opening menu to select books
+    btn_select_books = QPushButton("Select Books")
+    btn_select_books.clicked.connect(open_select_books)  # Connect button to function
+    layout.addWidget(btn_select_books)
     
     # Button for opening options
     btn_options = QPushButton("Options")
