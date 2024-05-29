@@ -22,8 +22,16 @@ KOBO2ANKI is an addon for Anki that allows you to take highlighted passages from
 
    - Connect your Kobo to your computer and run the KOBO2ANKI addon.
 
-4. **Select the Deck:**
-   - Choose the deck to which you want the cards to be added.
+4. **Select the books to import annotaitons from:**
+
+   - Click `Select Books` and chose which books to import annotations from. By default all books will be selected.
+
+5. **Select the Deck:**
+
+   - Open the options menu and choose the deck to which you want the cards to be added.
+
+6. **Set other options:**
+   - Set other options as explained below.
 
 ## Options
 
