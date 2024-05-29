@@ -155,6 +155,26 @@ def open_select_books():
         layout.addWidget(checkbox)
         checkboxes.append(checkbox)
     
+        # Add Select All and Select None buttons
+    btn_select_all = QPushButton("Select All")
+    btn_select_none = QPushButton("Select None")
+    
+    def select_all():
+        for checkbox in checkboxes:
+            checkbox.setChecked(True)
+    
+    def select_none():
+        for checkbox in checkboxes:
+            checkbox.setChecked(False)
+            
+    btn_select_all.clicked.connect(select_all)
+    btn_select_none.clicked.connect(select_none)
+
+    layout.addWidget(btn_select_all)
+    layout.addWidget(btn_select_none)
+
+
+    
     # Add OK and Cancel buttons
     button_box = QHBoxLayout()
     btn_ok = QPushButton("OK")
