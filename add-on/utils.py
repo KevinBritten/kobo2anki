@@ -89,30 +89,6 @@ def create_anki_cards(annotations):
     mw.reset()
     return successful_identifiers
 
-def add_checked_elements(successful_identifiers):
-    folder_path = config.get('annotation-directory', '')
-    # Define namespaces
-    namespaces = {'ns': 'http://ns.adobe.com/digitaleditions/annotations', 'dc': 'http://purl.org/dc/elements/1.1/'}
-
-    for filename in os.listdir(folder_path):
-        if filename.endswith(".annot"):
-            file_path = os.path.join(folder_path, filename)
-            tree = ET.parse(file_path)
-            root = tree.getroot()
-
-            # Iterate over annotations
-            for parent_elem in root.findall(".//ns:annotation", namespaces):
-                identifier_elem = parent_elem.find('.//dc:identifier', namespaces)
-                if identifier_elem is not None and identifier_elem.text in successful_identifiers:
-                    checked_elem = parent_elem.find(".//checked")
-                    if checked_elem is None:
-                        checked_elem = ET.Element('checked')
-                        checked_elem.text = 'true'
-                        parent_elem.insert(0, checked_elem)
-
-            # Save the modified file
-            tree.write(file_path)
-
 
 def show_confirmation_dialog(annotations,main_menu_dialog):
     dialog = QDialog(mw)
@@ -131,8 +107,6 @@ def show_confirmation_dialog(annotations,main_menu_dialog):
     def on_confirm():
         # Call the function that creates the cards and get the number of cards added
         successful_identifiers = create_anki_cards(annotations)
-        if config.get("add_checked_element_to_annotations", True):
-            add_checked_elements(successful_identifiers)
         # Display a message box with the number of cards added
         QMessageBox.information(dialog, "Cards Added", f"{len(successful_identifiers)} cards added")
         
@@ -166,13 +140,10 @@ def extract_words_and_context():
             root = tree.getroot()
 
             #Load config settings
-            skip_annotations_with_checked_element = config.get("skip_annotations_with_checked_element", True)
             add_empty_annotations = config.get("add_empty_annotations", False)
             add_single_word_empty_annotations_only = config.get("add_single_word_empty_annotations_only", True)
             # Iterate over annotations
             for parent_elem in root.findall(".//ns:annotation", namespaces):
-                checked_elem = parent_elem.find(".//checked")
-                if checked_elem is None or (checked_elem is not None and not skip_annotations_with_checked_element):
                     # Find the text element under fragment
                     annotation_elem = parent_elem.find(".//ns:target/ns:fragment/ns:text", namespaces)
                     annotation_text = annotation_elem.text if annotation_elem is not None else None                

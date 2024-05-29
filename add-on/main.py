@@ -73,16 +73,6 @@ def open_options():
     btn_choose_dir.clicked.connect(choose_directory)
     layout.addWidget(btn_choose_dir)
 
-    checkbox_skip_annotations_with_checked_element = QCheckBox("Enable skip_annotations_with_checked_element")
-    enable_skip_annotations_with_checked_element = config.get('skip_annotations_with_checked_element', True)
-    checkbox_skip_annotations_with_checked_element.setChecked(enable_skip_annotations_with_checked_element)
-    layout.addWidget(checkbox_skip_annotations_with_checked_element)
-
-    checkbox_add_checked_element_to_annotations = QCheckBox("Enable add_checked_element_to_annotations")
-    enable_add_checked_element_to_annotations = config.get('add_checked_element_to_annotations', True)
-    checkbox_add_checked_element_to_annotations.setChecked(enable_add_checked_element_to_annotations)
-    layout.addWidget(checkbox_add_checked_element_to_annotations)
-
     checkbox_add_empty_annotations = QCheckBox("Enable add_empty_annotations")
     enable_add_empty_annotations = config.get('add_empty_annotations', False)
     checkbox_add_empty_annotations.setChecked(enable_add_empty_annotations)
@@ -108,8 +98,6 @@ def open_options():
         config['target_lang'] = target_lang_entry.text()
 
         # Save the state of the checkbox to config
-        config['skip_annotations_with_checked_element'] = checkbox_skip_annotations_with_checked_element.isChecked()
-        config['add_checked_element_to_annotations'] = checkbox_add_checked_element_to_annotations.isChecked()
         config['add_empty_annotations'] = checkbox_add_empty_annotations.isChecked()
         config['add_single_word_empty_annotations_only'] = checkbox_add_single_word_empty_annotations_only.isChecked()
         mw.addonManager.writeConfig(__name__, config)

@@ -27,8 +27,6 @@ KOBO2ANKI is an addon for Anki that allows you to take highlighted passages from
 
 ## Options
 
-- **`add_checked_element_to_annotations`** (boolean, default: `true`)
-  - Marks highlighted passages as checked after creating a card from them, allowing them to be skipped to avoid duplicate cards.
 - **`add_empty_annotations`** (boolean, default: `false`)
   - Creates cards based on highlighted passages with no associated note.
 - **`add_single_word_empty_annotations_only`** (boolean, default: `true`)
@@ -41,8 +39,6 @@ KOBO2ANKI is an addon for Anki that allows you to take highlighted passages from
   - API key for DeepL.
 - **`openai_api_key`** (string)
   - API key for OpenAI.
-- **`skip_annotations_with_checked_element`** (boolean, default: `true`)
-  - Skip adding cards for highlighted passages that have been marked as already checked.
 - **`source_lang`** (string, default:`"FR"`)
   - Language to translate from. [Complete list of supported source languages.](https://developers.deepl.com/docs/resources/supported-languages#source-languages).
 - **`target_lang`** (string, default:`"EN-GB"`)
