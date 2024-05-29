@@ -41,6 +41,8 @@ KOBO2ANKI is an addon for Anki that allows you to take highlighted passages from
   - API key for OpenAI.
 - **`source_lang`** (string, default:`"FR"`)
   - Language to translate from. [Complete list of supported source languages.](https://developers.deepl.com/docs/resources/supported-languages#source-languages).
+- **`skip_annotations_with_existing_card`** (boolean, default: `true`)
+  - If set to true annotations which match the front of a card in the selected deck will be skipped.
 - **`target_lang`** (string, default:`"EN-GB"`)
   - Language to translate to. [Complete list of supported target languages.](https://developers.deepl.com/docs/resources/supported-languages#target-languages).
 

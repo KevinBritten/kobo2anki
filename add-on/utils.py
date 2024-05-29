@@ -140,8 +140,12 @@ def extract_words_and_context():
             root = tree.getroot()
 
             #Load config settings
+            skip_annotations_with_existing_card = config.get("skip_annotations_with_existing_card", True)
             add_empty_annotations = config.get("add_empty_annotations", False)
             add_single_word_empty_annotations_only = config.get("add_single_word_empty_annotations_only", True)
+            deck_id = config.get('selected_deck_id')
+            deck_name = mw.col.decks.get(deck_id)['name']
+            card_ids = mw.col.find_cards(f'deck:"{deck_name}"')            
             # Iterate over annotations
             for parent_elem in root.findall(".//ns:annotation", namespaces):
                     # Find the text element under fragment
@@ -151,7 +155,11 @@ def extract_words_and_context():
                     word_elem_content = word_elem.text if word_elem is not None else None 
                     identifier = parent_elem.find('.//dc:identifier', namespaces).text
                     word_text = ""
+                    if skip_annotations_with_existing_card:
+                        if search_for_annotation_in_cards(annotation_text,card_ids):
+                            continue
                     if word_elem_content is not None or add_empty_annotations:
+                        # if any(card['front'] == annotation_text for card in deck.get(deck_id, [])):
                         if word_elem_content is None:
                             #check for whitespace in annotation_text
                             contains_whitespace = any(char.isspace() for char in annotation_text)
@@ -195,3 +203,13 @@ def get_annotation_folder():
         return None
 
     return folder_path
+
+def search_for_annotation_in_cards(annotation_text,ids):
+    result = False
+    for id in ids:
+         note_front = mw.col.get_card(id).note()["Front"]
+         if annotation_text == note_front:
+             result = True
+             break
+    return result
+         

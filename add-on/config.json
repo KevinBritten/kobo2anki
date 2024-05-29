@@ -6,5 +6,6 @@
   "api_mode": "deepl",
   "source_lang" : "FR",
   "target_lang" : "EN-GB",
-  "annotation-directory": ""
+  "annotation-directory": "",
+  "skip_annotations_with_existing_card": true
 }

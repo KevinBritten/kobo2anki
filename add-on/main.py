@@ -11,7 +11,6 @@ def main_function():
 
 def translate_words():
     annotations = extract_words_and_context()
-    print(annotations)
     if annotations:
         show_confirmation_dialog(annotations, main_menu_dialog)
     elif annotations is not None:
@@ -45,7 +44,7 @@ def open_options():
             combo_decks.setCurrentIndex(index)
     layout.addWidget(combo_decks_label)
     layout.addWidget(combo_decks)
-       
+    
     source_lang_label = QLabel("Source Language")
     source_lang_entry = QLineEdit()
     source_lang_entry.setText(config.get('source_lang', 'FR'))
@@ -72,6 +71,11 @@ def open_options():
     btn_choose_dir = QPushButton("Choose Directory")
     btn_choose_dir.clicked.connect(choose_directory)
     layout.addWidget(btn_choose_dir)
+    
+    checkbox_skip_annotations_with_existing_card = QCheckBox("Enable skip_annotations_with_existing_card")
+    enable_skip_annotations_with_existing_card = config.get('skip_annotations_with_existing_card', False)
+    checkbox_skip_annotations_with_existing_card.setChecked(enable_skip_annotations_with_existing_card)
+    layout.addWidget(checkbox_skip_annotations_with_existing_card)
 
     checkbox_add_empty_annotations = QCheckBox("Enable add_empty_annotations")
     enable_add_empty_annotations = config.get('add_empty_annotations', False)
@@ -98,6 +102,7 @@ def open_options():
         config['target_lang'] = target_lang_entry.text()
 
         # Save the state of the checkbox to config
+        config['skip_annotations_with_existing_card'] = checkbox_skip_annotations_with_existing_card.isChecked()
         config['add_empty_annotations'] = checkbox_add_empty_annotations.isChecked()
         config['add_single_word_empty_annotations_only'] = checkbox_add_single_word_empty_annotations_only.isChecked()
         mw.addonManager.writeConfig(__name__, config)
