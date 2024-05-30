@@ -2,7 +2,8 @@
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo
-from .utils import update_config, show_confirmation_dialog,extract_words_and_context
+from .utils import update_config, show_confirmation_dialog,extract_words_and_context, get_available_languages
+import threading
 
 import os
 import xml.etree.ElementTree as ET
@@ -10,10 +11,15 @@ import xml.etree.ElementTree as ET
 main_menu_dialog = None
 
 selected_books = True
+source_langs = ['loading languages']
+target_langs = ['loading languages']
 
 def main_function():
     global selected_books
+    threading.Thread(target=set_lang_options).start()
     open_main_menu()
+ 
+
 
 def translate_words():
     annotations = extract_words_and_context(selected_books)
@@ -51,17 +57,22 @@ def open_options():
     layout.addWidget(combo_decks_label)
     layout.addWidget(combo_decks)
     
+    # Source language
     source_lang_label = QLabel("Source Language")
-    source_lang_entry = QLineEdit()
-    source_lang_entry.setText(config.get('source_lang', 'FR'))
+    source_lang_entry = QComboBox()
+    source_lang_entry.addItems(source_langs)
+    source_lang_entry.setCurrentText(config.get('source_lang', 'FR'))
     layout.addWidget(source_lang_label)
     layout.addWidget(source_lang_entry)
-    
+
+    # Target language
     target_lang_label = QLabel("Target Language")
-    target_lang_entry = QLineEdit()
-    target_lang_entry.setText(config.get('target_lang', 'EN-GB'))
+    target_lang_entry = QComboBox()
+    target_lang_entry.addItems(target_langs)
+    target_lang_entry.setCurrentText(config.get('target_lang', 'EN-GB'))
     layout.addWidget(target_lang_label)
     layout.addWidget(target_lang_entry)
+
     
     dir_label = QLabel("Select Directory")
     dir_entry = QLineEdit()
@@ -104,8 +115,8 @@ def open_options():
         
         config['annotation-directory'] = dir_entry.text()
         
-        config['source_lang'] = source_lang_entry.text()
-        config['target_lang'] = target_lang_entry.text()
+        config['source_lang'] = source_lang_entry.currentText()
+        config['target_lang'] = target_lang_entry.currentText()
 
         # Save the state of the checkbox to config
         config['skip_annotations_with_existing_card'] = checkbox_skip_annotations_with_existing_card.isChecked()
@@ -218,3 +229,9 @@ def open_main_menu():
     
     # Show the dialog
     main_menu_dialog.exec()
+    
+def set_lang_options():
+    global target_langs
+    global source_langs
+    target_langs = get_available_languages('target')
+    source_langs = get_available_languages('source')

@@ -220,4 +220,14 @@ def search_for_annotation_in_cards(annotation_text,ids):
              result = True
              break
     return result
+
+def get_available_languages(type):
+    import deepl
+    api_key = config.get("deepl_api_key", "")
+    translator = deepl.Translator(api_key)
+    if type == 'source':
+        return [language.code for language in translator.get_source_languages()]
+    elif type == 'target':
+        return [language.code for language in translator.get_target_languages()]
+
          
