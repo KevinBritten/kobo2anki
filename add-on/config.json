@@ -4,7 +4,7 @@
   "add_empty_annotations": false,
   "add_single_word_empty_annotations_only": true,
   "api_mode": "deepl",
-  "source_lang" : "FR",
+  "source_lang" : "Auto detect",
   "target_lang" : "EN-GB",
   "annotation-directory": "",
   "skip_annotations_with_existing_card": true

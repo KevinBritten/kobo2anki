@@ -23,8 +23,10 @@ def define_with_deepl(word, context):
     import deepl
     api_key = config.get("deepl_api_key", "")
     translator = deepl.Translator(api_key)
-    source_lang = config.get("source_lang", "FR")
+    source_lang = config.get("source_lang", "")
     target_lang = config.get("target_lang", "EN-GB")
+    if (source_lang == 'Auto detect'):
+        source_lang = ""
     
     try:
         translation = translator.translate_text(word, context=context, source_lang=source_lang, target_lang=target_lang, glossary=None) 

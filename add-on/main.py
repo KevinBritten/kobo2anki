@@ -11,8 +11,8 @@ import xml.etree.ElementTree as ET
 main_menu_dialog = None
 
 selected_books = True
-source_langs = ['loading languages']
-target_langs = ['loading languages']
+source_langs = ['loading languages (try reopening options)']
+target_langs = ['loading languages (try reopening options)']
 
 def main_function():
     global selected_books
@@ -61,7 +61,11 @@ def open_options():
     source_lang_label = QLabel("Source Language")
     source_lang_entry = QComboBox()
     source_lang_entry.addItems(source_langs)
-    source_lang_entry.setCurrentText(config.get('source_lang', 'FR'))
+    current_source_lang = config.get('source_lang', '')
+    if (current_source_lang == ''):
+        source_lang_entry.setCurrentText('Auto detect')
+    else:
+        source_lang_entry.setCurrentText(current_source_lang)
     layout.addWidget(source_lang_label)
     layout.addWidget(source_lang_entry)
 
@@ -115,7 +119,10 @@ def open_options():
         
         config['annotation-directory'] = dir_entry.text()
         
-        config['source_lang'] = source_lang_entry.currentText()
+        if (source_lang_entry.currentText() == 'Auto detect'):
+            config['source_lang'] = ""
+        else:
+            config['source_lang'] = source_lang_entry.currentText()
         config['target_lang'] = target_lang_entry.currentText()
 
         # Save the state of the checkbox to config
@@ -235,3 +242,4 @@ def set_lang_options():
     global source_langs
     target_langs = get_available_languages('target')
     source_langs = get_available_languages('source')
+    source_langs.insert(0,'Auto detect')
