@@ -19,14 +19,11 @@ def update_config():
 
 
 
-def define_with_deepl(word, context):
+def define_with_deepl(word, context,source_lang,target_lang):
     import deepl
     api_key = config.get("deepl_api_key", "")
     translator = deepl.Translator(api_key)
-    source_lang = config.get("source_lang", "")
-    target_lang = config.get("target_lang", "EN-GB")
-    if (source_lang == 'Auto detect'):
-        source_lang = ""
+    
     
     try:
         translation = translator.translate_text(word, context=context, source_lang=source_lang, target_lang=target_lang, glossary=None) 
@@ -70,10 +67,11 @@ def create_anki_cards(annotations):
     definition_func = get_definition_func()
     deck_id = config.get('selected_deck_id')
     num_cards_added = 0;
+    source_lang, target_lang = set_langs()
     for annotation in annotations:
         word = annotation['word']
         annotation_text = annotation['annotation_text']
-        definition = definition_func(word,annotation_text)
+        definition = definition_func(word,annotation_text,source_lang,target_lang)
         modelID = None  # Initialize modelID to None
         models = mw.col.models.all()  # Retrieve all models in the collection
         for model in models:
@@ -229,5 +227,12 @@ def get_available_languages(type):
         return [language.code for language in translator.get_source_languages()]
     elif type == 'target':
         return [language.code for language in translator.get_target_languages()]
+    
+def set_langs():
+    source_lang = config.get("source_lang", "")
+    target_lang = config.get("target_lang", "EN-GB")
+    if (source_lang == 'Auto detect'):
+        source_lang = ""
+    return source_lang, target_lang
 
          
