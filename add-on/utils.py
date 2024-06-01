@@ -69,11 +69,10 @@ def create_anki_cards(annotations):
     # Load the deck ID from the configuration
     definition_func = get_definition_func()
     deck_id = config.get('selected_deck_id')
-    successful_identifiers = []
+    num_cards_added = 0;
     for annotation in annotations:
         word = annotation['word']
         annotation_text = annotation['annotation_text']
-        identifier = annotation['identifier']
         definition = definition_func(word,annotation_text)
         modelID = None  # Initialize modelID to None
         models = mw.col.models.all()  # Retrieve all models in the collection
@@ -87,9 +86,9 @@ def create_anki_cards(annotations):
         note["Back"] = word + ' - ' + definition
         note["Front"] = annotation_text
         if mw.col.add_note(note, deck_id):
-             successful_identifiers.append(identifier)
+             num_cards_added+=1
     mw.reset()
-    return successful_identifiers
+    return num_cards_added
 
 
 def show_confirmation_dialog(annotations,main_menu_dialog):
@@ -108,9 +107,9 @@ def show_confirmation_dialog(annotations,main_menu_dialog):
 
     def on_confirm():
         # Call the function that creates the cards and get the number of cards added
-        successful_identifiers = create_anki_cards(annotations)
+        num_cards_added = create_anki_cards(annotations)
         # Display a message box with the number of cards added
-        QMessageBox.information(dialog, "Cards Added", f"{len(successful_identifiers)} cards added")
+        QMessageBox.information(dialog, "Cards Added", f"{num_cards_added} cards added")
         
         # Close the original dialog
         dialog.close()
@@ -163,7 +162,6 @@ def extract_words_and_context(selected_books):
                     annotation_text = annotation_elem.text if annotation_elem is not None else None                
                     word_elem = parent_elem.find(".//ns:content/ns:text", namespaces)
                     word_elem_content = word_elem.text if word_elem is not None else None 
-                    identifier = parent_elem.find('.//dc:identifier', namespaces).text
                     word_text = ""
                     if skip_annotations_with_existing_card:
                         if search_for_annotation_in_cards(annotation_text,card_ids):
@@ -192,7 +190,7 @@ def extract_words_and_context(selected_books):
                             # Case 3: word_elem_content is a string in any other format
                             word_text = word_elem_content
                     if annotation_text is not None and word_text:
-                        annotations.append({'annotation_text': annotation_text, 'word': word_text, 'identifier':identifier})
+                        annotations.append({'annotation_text': annotation_text, 'word': word_text})
            
     return annotations
 
