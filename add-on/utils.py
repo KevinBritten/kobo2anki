@@ -26,7 +26,7 @@ def define_with_deepl(word, context,source_lang,target_lang):
     
     
     try:
-        translation = translator.translate_text(word, context=context, source_lang=source_lang, target_lang=target_lang, glossary=None) 
+        translation = translator.translate_text(word, context=context, source_lang=source_lang, target_lang=target_lang) 
         return translation.text  # or some manipulation if you want to extract the translation of 'word' specifically
         
     except Exception as e:
