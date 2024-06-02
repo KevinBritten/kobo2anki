@@ -8,6 +8,7 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 from datetime import datetime
+import concurrent.futures
 
 lib_path = os.path.join(os.path.dirname(__file__), 'lib')
 sys.path.insert(0, lib_path)
@@ -27,7 +28,7 @@ def define_with_deepl(word, context,source_lang,target_lang):
     
     try:
         translation = translator.translate_text(word, context=context, source_lang=source_lang, target_lang=target_lang) 
-        return translation.text  # or some manipulation if you want to extract the translation of 'word' specifically
+        return word, context,translation.text  # or some manipulation if you want to extract the translation of 'word' specifically
         
     except Exception as e:
         print("Error in translating with DeepL:", str(e))
@@ -66,19 +67,12 @@ def create_anki_cards(annotations):
     # Load the deck ID from the configuration
     definition_func = get_definition_func()
     deck_id = config.get('selected_deck_id')
+    modelID = get_model_id()
     num_cards_added = 0;
     source_lang, target_lang = set_langs()
-    for annotation in annotations:
-        word = annotation['word']
-        annotation_text = annotation['annotation_text']
-        definition = definition_func(word,annotation_text,source_lang,target_lang)
-        modelID = None  # Initialize modelID to None
-        models = mw.col.models.all()  # Retrieve all models in the collection
-        for model in models:
-            if model['name'] == "Basic":  # Check if the model name is "Basic"
-                modelID = model['id']  # Store the model ID in modelID
-                break  # Exit the loop once the desired model is found
-        # Create a new note
+    results = batch_translate(annotations,definition_func,source_lang,target_lang)
+    for result in results:
+        word, annotation_text,definition= result
         note = mw.col.new_note(modelID)  # Include the reference to the Anki collection
         # Set the word as the front of the card
         note["Back"] = word + ' - ' + definition
@@ -234,5 +228,26 @@ def set_langs():
     if (source_lang == 'Auto detect'):
         source_lang = ""
     return source_lang, target_lang
+
+def batch_translate(annotations,definition_func,source_lang,target_lang):
+    results = []
+    
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [
+            executor.submit(definition_func, annotation['word'], annotation['annotation_text'], source_lang, target_lang)
+            for annotation in annotations
+        ]
+        for future in concurrent.futures.as_completed(futures):
+            results.append(future.result())
+    return results
+
+def get_model_id():
+    modelID = None  # Initialize modelID to None
+    models = mw.col.models.all()  # Retrieve all models in the collection
+    for model in models:
+        if model['name'] == "Basic":  # Check if the model name is "Basic"
+            modelID = model['id']  # Store the model ID in modelID
+            break  # Exit the loop once the desired model is found
+    return modelID
 
          
