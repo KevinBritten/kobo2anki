@@ -1,13 +1,10 @@
 # utils.py
-import sqlite3
-import traceback
 from anki.notes import Note
 from aqt import mw
 from aqt.qt import QDialog, QVBoxLayout, QLabel, QPushButton, QMessageBox
 import os
 import sys
 import xml.etree.ElementTree as ET
-from datetime import datetime
 import concurrent.futures
 
 lib_path = os.path.join(os.path.dirname(__file__), 'lib')
@@ -20,7 +17,7 @@ def update_config():
 
 
 
-def define_with_deepl(word, context,source_lang,target_lang):
+def definition_func(word, context,source_lang,target_lang):
     import deepl
     api_key = config.get("deepl_api_key", "")
     translator = deepl.Translator(api_key)
@@ -35,42 +32,13 @@ def define_with_deepl(word, context,source_lang,target_lang):
         return None
 
 
-def define_with_open_ai(word, context):
-    from openai import OpenAI
-    client = OpenAI(
-        api_key=config.get("openai_api_key", ""),
-    )
-    prompt = f'Translate "{word}" to english. Do not include any text outside of the definition in your response. If there are multiple definitions, use the following sentence for context (Do not repeat the word or the sentence, only output the definition): {context}'
-    response = client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-            }
-        ],
-        model="gpt-3.5-turbo",
-        )
-    definition = response.choices[0].message.content
-    return definition
-
-def get_definition_func():
-    api_mode = config.get("api_mode", "deepl")  # Default to "deepl" if not specified
-    if api_mode == "openai":
-        definition_func = define_with_open_ai
-    elif api_mode == "deepl":
-        definition_func = define_with_deepl
-    else:
-        raise ValueError("Invalid api_mode in config")
-    return definition_func
-
 def create_anki_cards(annotations):
     # Load the deck ID from the configuration
-    definition_func = get_definition_func()
     deck_id = config.get('selected_deck_id')
     modelID = get_model_id()
     num_cards_added = 0;
     source_lang, target_lang = set_langs()
-    results = batch_translate(annotations,definition_func,source_lang,target_lang)
+    results = batch_translate(annotations,source_lang,target_lang)
     for result in results:
         word, annotation_text,definition= result
         note = mw.col.new_note(modelID)  # Include the reference to the Anki collection
@@ -229,7 +197,7 @@ def set_langs():
         source_lang = ""
     return source_lang, target_lang
 
-def batch_translate(annotations,definition_func,source_lang,target_lang):
+def batch_translate(annotations,source_lang,target_lang):
     results = []
     
     with concurrent.futures.ThreadPoolExecutor() as executor:
