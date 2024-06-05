@@ -10,6 +10,8 @@ import concurrent.futures
 lib_path = os.path.join(os.path.dirname(__file__), 'lib')
 sys.path.insert(0, lib_path)
 config = mw.addonManager.getConfig(__name__)
+import deepl
+
 
 def update_config():
     global config
@@ -18,7 +20,7 @@ def update_config():
 
 
 def definition_func(word, context,source_lang,target_lang):
-    import deepl
+   
     api_key = config.get("deepl_api_key", "")
     translator = deepl.Translator(api_key)
     
@@ -182,7 +184,6 @@ def search_for_annotation_in_cards(annotation_text,ids):
     return result
 
 def get_available_languages(type):
-    import deepl
     api_key = config.get("deepl_api_key", "")
     translator = deepl.Translator(api_key)
     if type == 'source':
