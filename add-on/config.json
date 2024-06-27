@@ -5,5 +5,6 @@
   "source_lang" : "Auto detect",
   "target_lang" : "EN-GB",
   "annotation-directory": "",
-  "skip_annotations_with_existing_card": true
+  "skip_annotations_with_existing_card": true,
+  "server_mode" : true
 }

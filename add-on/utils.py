@@ -6,6 +6,8 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 import concurrent.futures
+import requests
+
 
 lib_path = os.path.join(os.path.dirname(__file__), 'lib')
 sys.path.insert(0, lib_path)
@@ -20,19 +22,35 @@ def update_config():
 
 
 def definition_func(word, context,source_lang,target_lang):
+    server_mode = config.get("server_mode", False)
    
-    api_key = config.get("deepl_api_key", "")
-    translator = deepl.Translator(api_key)
-    
-    
     try:
-        translation = translator.translate_text(word, context=context, source_lang=source_lang, target_lang=target_lang) 
-        return word, context,translation.text  # or some manipulation if you want to extract the translation of 'word' specifically
-        
+        if (server_mode):
+            server_url = 'http://localhost:3000/translate'
+            response = requests.post(server_url, json={
+            'text': word,
+            'context':context,
+            'source_lang':source_lang,
+            'target_lang':target_lang
+            })
+            if response.status_code == 200:
+                data = response.json()
+                if 'translations' in data and len(data['translations']) > 0:
+                    translation = data['translations']['text']
+                    return word, context,translation
+                else:
+                    print("No translations found in the response.")
+            else:
+                    print("Error:", response.status_code, response.text)
+        else:
+            api_key = config.get("deepl_api_key", "")
+            translator = deepl.Translator(api_key)
+            translation = translator.translate_text(word, context=context, source_lang=source_lang, target_lang=target_lang) 
+            return word, context,translation.text 
+            
     except Exception as e:
         print("Error in translating with DeepL:", str(e))
         return None
-
 
 def create_anki_cards(annotations):
     # Load the deck ID from the configuration
