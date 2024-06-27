@@ -108,6 +108,11 @@ def open_options():
     checkbox_add_single_word_empty_annotations_only.setChecked(enable_add_single_word_empty_annotations_only)
     layout.addWidget(checkbox_add_single_word_empty_annotations_only)
     
+    checkbox_server_mode = QCheckBox("Enable server_mode")
+    enable_server_mode = config.get('server_mode', False)
+    checkbox_server_mode.setChecked(enable_server_mode)
+    layout.addWidget(checkbox_server_mode)
+    
     save_cancel_layout = QHBoxLayout()
     btn_save = QPushButton("Save")
     btn_cancel = QPushButton("Cancel")
@@ -129,6 +134,8 @@ def open_options():
         config['skip_annotations_with_existing_card'] = checkbox_skip_annotations_with_existing_card.isChecked()
         config['add_empty_annotations'] = checkbox_add_empty_annotations.isChecked()
         config['add_single_word_empty_annotations_only'] = checkbox_add_single_word_empty_annotations_only.isChecked()
+        config['server_mode'] = checkbox_server_mode.isChecked()
+
         mw.addonManager.writeConfig(__name__, config)
         update_config()
         dialog.accept()
