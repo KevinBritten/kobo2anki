@@ -113,6 +113,23 @@ def open_options():
     checkbox_server_mode.setChecked(enable_server_mode)
     layout.addWidget(checkbox_server_mode)
     
+    api_key_label = QLabel("Enter DeepL API Key")
+    api_key_entry = QLineEdit()
+    api_key_entry.setText(config.get('deepl_api_key', ''))
+    layout.addWidget(api_key_label)
+    layout.addWidget(api_key_entry)
+    
+    #disable api key entry when server mode is enabled
+    
+    def toggle_api_key_entry():
+        # Disable the api_key_entry if the checkbox is checked, otherwise enable it
+        api_key_entry.setEnabled(not checkbox_server_mode.isChecked())
+        
+    checkbox_server_mode.stateChanged.connect(toggle_api_key_entry)
+    toggle_api_key_entry()
+    
+ 
+    
     save_cancel_layout = QHBoxLayout()
     btn_save = QPushButton("Save")
     btn_cancel = QPushButton("Cancel")
@@ -135,6 +152,8 @@ def open_options():
         config['add_empty_annotations'] = checkbox_add_empty_annotations.isChecked()
         config['add_single_word_empty_annotations_only'] = checkbox_add_single_word_empty_annotations_only.isChecked()
         config['server_mode'] = checkbox_server_mode.isChecked()
+        
+        config['deepl_api_key'] = api_key_entry.text()
 
         mw.addonManager.writeConfig(__name__, config)
         update_config()
