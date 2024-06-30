@@ -45,6 +45,8 @@ KOBO2ANKI is an addon for Anki that allows you to take highlighted passages from
   - API key for DeepL.
 - **`source_lang`** (string, default:`""`)
   - Language to translate from. Optional, left blank the language will be detected by DeepL. [Complete list of supported source languages.](https://developers.deepl.com/docs/resources/supported-languages#source-languages).
+- **`server_mode`** (boolean, default: `true`)
+  - If set to true translations will be fetched from a server meaning no API key is required.
 - **`skip_annotations_with_existing_card`** (boolean, default: `true`)
   - If set to true annotations which match the front of a card in the selected deck will be skipped.
 - **`target_lang`** (string, default:`"EN-GB"`)
@@ -52,7 +54,6 @@ KOBO2ANKI is an addon for Anki that allows you to take highlighted passages from
 
 ## Planned Features
 
-- Server mode to allow a small amount of translations without an API key.
 - Selection and handling of individual highlighted passages instead of only bulk add.
 
 ## Development
