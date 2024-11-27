@@ -185,6 +185,14 @@ def open_select_books():
                 book_title = book_title_element.text
                 books.append(book_title)
 
+        elif filename.endswith(".txt"):
+            file_path = os.path.join(folder_path, filename)
+            with open(file_path, "r", encoding="utf-8") as file:
+                first_line = file.readline().strip()
+                if first_line:  # Check if the first line is not empty
+                    books.append(first_line)
+
+
     # Create a new window with checkboxes for each book title
     dialog = QDialog(mw)
     dialog.setWindowTitle("Select Books")
