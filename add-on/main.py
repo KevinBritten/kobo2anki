@@ -1,7 +1,6 @@
 # main.py
 from aqt import mw
 from aqt.qt import *
-from aqt.utils import showInfo
 from .utils import update_config, show_confirmation_dialog,extract_words_and_context, get_available_languages
 import threading
 
