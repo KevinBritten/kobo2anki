@@ -28,12 +28,6 @@ def translate_words():
     elif annotations is not None:
         QMessageBox.warning(None, "No Annotations Found", "No annotations were found.")
 
-
-
-from aqt import mw
-from aqt.qt import *
-from aqt.utils import showInfo
-
 def open_options():
     dialog = QDialog(mw)
     dialog.setWindowTitle("Options")
