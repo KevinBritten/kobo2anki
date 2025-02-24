@@ -1,7 +1,7 @@
 # utils.py
 from anki.notes import Note
 from aqt import mw
-from aqt.qt import QDialog, QVBoxLayout, QLabel, QPushButton, QMessageBox
+from aqt.qt import QDialog, QVBoxLayout, QLabel, QPushButton, QMessageBox,QScrollArea,QWidget
 import os
 import sys
 import xml.etree.ElementTree as ET
@@ -74,16 +74,29 @@ def create_anki_cards(annotations):
 def show_confirmation_dialog(annotations,main_menu_dialog):
     dialog = QDialog(mw)
     dialog.setWindowTitle("Confirmation")
-    dialog.setGeometry(100, 100, 300, 150)
+    dialog.setGeometry(100, 100, 500, 650)
     layout = QVBoxLayout(dialog)
 
     label = QLabel("Do you want to create Anki cards for the following words?")
     layout.addWidget(label)
+    
+    
+    # Create a QScrollArea and add it to the main layout.
+    scroll_area = QScrollArea(dialog)
+    scroll_area.setWidgetResizable(True)
+    layout.addWidget(scroll_area)
+
+    # Create a widget to act as a container for your content.
+    content_widget = QWidget()
+    scroll_area.setWidget(content_widget)
+
+    # Create a layout for your content.
+    content_layout = QVBoxLayout(content_widget)
 
     for annotation in annotations:
         word = annotation['word']
         label = QLabel(str(word))
-        layout.addWidget(label)
+        content_layout.addWidget(label)
 
     def on_confirm():
         # Call the function that creates the cards and get the number of cards added
