@@ -186,7 +186,6 @@ def extract_words_and_context(selected_books):
                     if annotation_text is not None and word_text:
                         annotations.append({'annotation_text': annotation_text, 'word': word_text})
         elif filename.endswith(".txt"):
-            print('.txt')
             # Open and read the file
             with open(file_path, "r", encoding="utf-8") as f:
                 text = f.read().strip()
