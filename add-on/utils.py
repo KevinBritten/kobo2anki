@@ -115,8 +115,16 @@ def extract_words_and_context(selected_books):
     namespaces = {'ns': 'http://ns.adobe.com/digitaleditions/annotations', 'dc': 'http://purl.org/dc/elements/1.1/'}
 
     for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        #Load config settings
+        skip_annotations_with_existing_card = config.get("skip_annotations_with_existing_card", True)
+        add_empty_annotations = config.get("add_empty_annotations", False)
+        add_single_word_empty_annotations_only = config.get("add_single_word_empty_annotations_only", True)
+        deck_id = config.get('selected_deck_id')
+        deck_name = mw.col.decks.get(deck_id)['name']
+        card_ids = mw.col.find_cards(f'deck:"{deck_name}"')       
+
         if filename.endswith(".annot"):
-            file_path = os.path.join(folder_path, filename)
             tree = ET.parse(file_path)
             root = tree.getroot()
             
@@ -128,13 +136,7 @@ def extract_words_and_context(selected_books):
                 if ((book_title is None) or  book_title not in selected_books):
                     continue
 
-            #Load config settings
-            skip_annotations_with_existing_card = config.get("skip_annotations_with_existing_card", True)
-            add_empty_annotations = config.get("add_empty_annotations", False)
-            add_single_word_empty_annotations_only = config.get("add_single_word_empty_annotations_only", True)
-            deck_id = config.get('selected_deck_id')
-            deck_name = mw.col.decks.get(deck_id)['name']
-            card_ids = mw.col.find_cards(f'deck:"{deck_name}"')            
+                
             # Iterate over annotations
             for parent_elem in root.findall(".//ns:annotation", namespaces):
                     # Find the text element under fragment
@@ -143,11 +145,10 @@ def extract_words_and_context(selected_books):
                     word_elem = parent_elem.find(".//ns:content/ns:text", namespaces)
                     word_elem_content = word_elem.text if word_elem is not None else None 
                     word_text = ""
-                    if skip_annotations_with_existing_card:
-                        if search_for_annotation_in_cards(annotation_text,card_ids):
-                            continue
+                    if (skip_annotations_with_existing_card and search_for_annotation_in_cards(annotation_text,card_ids)):
+                        continue
                     if word_elem_content is not None or add_empty_annotations:
-                        # if any(card['front'] == annotation_text for card in deck.get(deck_id, [])):
+                        
                         if word_elem_content is None:
                             #check for whitespace in annotation_text
                             contains_whitespace = any(char.isspace() for char in annotation_text)
@@ -171,8 +172,65 @@ def extract_words_and_context(selected_books):
                             word_text = word_elem_content
                     if annotation_text is not None and word_text:
                         annotations.append({'annotation_text': annotation_text, 'word': word_text})
-           
+        elif filename.endswith(".txt"):
+            # Open and read the file
+            with open(file_path, "r", encoding="utf-8") as f:
+                text = f.read().strip()
+
+            # Split the text into sections using double newlines as separators.
+            sections = text.split("\n\n")
+
+            # The first section is the book title.
+            book_title = sections[0].strip()
+            
+            if ((selected_books is not True) and ((book_title is None) or  book_title not in selected_books)):
+                continue
+
+            # The remaining sections are your datapoints.
+            for datapoint in sections[1:]:
+                # Each datapoint might have one or two lines.
+                lines = datapoint.splitlines()
+                annotation_text = lines[0].strip()  # The first line is always the sentence.
+                
+                if (skip_annotations_with_existing_card and search_for_annotation_in_cards(annotation_text,card_ids)):
+                    continue
+                
+                # Optionally, the second line might be a note.
+                if len(lines) > 1 and lines[1].startswith("Note:"):
+                    note = lines[1].strip()[len("Note: "):]
+                else:
+                    note = None
+                
+                if note is not None or add_empty_annotations:
+                    
+                    word_text = get_card_back_from_annotation_and_note(note,annotation_text,add_single_word_empty_annotations_only)  
+                    
+                    if annotation_text is not None and word_text:
+                        annotations.append({'annotation_text': annotation_text, 'word': word_text})
     return annotations
+
+def get_card_back_from_annotation_and_note(note,annotation_text,add_single_word_empty_annotations_only):
+    if note is None:
+            #check for whitespace in annotation_text
+        contains_whitespace = any(char.isspace() for char in annotation_text)
+        if add_single_word_empty_annotations_only and contains_whitespace:
+            return None
+        return annotation_text
+    elif note.isdigit():
+        # Case 1: note is a single number
+        words = annotation_text.split()
+        index = int(note) - 1
+        if 0 <= index < len(words):
+            return words[index]
+    elif '.' in note and all(part.isdigit() for part in note.split('.')):
+        # Case 2: note is of format "num1.num2"
+        start_index, end_index = map(int, note.split('.'))
+        words = annotation_text.split()
+        if 0 <= start_index-1 < len(words) and 0 < end_index <= len(words) and start_index <= end_index:
+            return ' '.join(words[start_index-1:end_index])
+    else:
+        # Case 3: note is a string in any other format
+        return note
 
 def get_annotation_folder():
     folder_path = config.get('annotation-directory', '')
