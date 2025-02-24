@@ -256,7 +256,7 @@ def get_annotation_folder():
         QMessageBox.warning(None, "Invalid Directory", "The selected directory is invalid.")
         return None
 
-    annotation_files = [f for f in os.listdir(folder_path) if f.endswith(".annot")]
+    annotation_files = [f for f in os.listdir(folder_path) if (f.endswith(".annot") or f.endswith(".txt"))]
     if not annotation_files:
         QMessageBox.warning(None, "No Annotation Files", "The selected directory does not contain any annotation files.")
         return None
